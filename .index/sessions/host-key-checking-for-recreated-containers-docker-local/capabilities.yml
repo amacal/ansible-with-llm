@@ -1,0 +1,8 @@
+- "diagnose-unknown-vs-changed-host-key"
+- "configure-per-exercise-known-hosts"
+- "seed-known-hosts-from-docker-daemon"
+- "delegate-task-to-controller"
+- "register-and-reuse-task-output"
+- "force-read-only-task-in-check-mode"
+- "verify-host-identity-with-assert"
+- "run-negative-host-key-test"

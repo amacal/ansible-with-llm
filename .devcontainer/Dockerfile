@@ -10,7 +10,9 @@ USER vscode
 ENV PATH="/home/vscode/.local/bin:${PATH}"
 
 RUN pipx install --include-deps ansible \
+    && pipx inject ansible requests \
     && pipx install ansible-lint \
+    && pipx inject ansible-lint ansible \
     && ansible --version
 
 RUN curl -fsSL https://claude.ai/install.sh | bash -s stable \

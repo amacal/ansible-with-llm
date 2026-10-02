@@ -1,0 +1,5 @@
+title: "Host Key Checking for Recreated Containers (docker-local)"
+kind: implementation
+target: docker-local
+file: docker-local/inventory-hostkeys/
+date: "2026-10-02"
