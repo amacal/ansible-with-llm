@@ -175,22 +175,35 @@ not lost inside a single title.
 ## Exercise files
 
 - Each exercise is a self-contained directory under its target directory —
-  `{target-dir}/{slug}/` — holding everything it needs: the playbook(s),
+  `{target-dir}/{dir}/` — holding everything it needs: the playbook(s),
   any roles, `inventory.ini`, and that exercise's own `ansible.cfg`. No
   shared, repo-wide `ansible.cfg` and no default inventory path — every
   exercise is explicit about its own configuration, nothing inherited
   silently from outside its own directory.
+- `{dir}` is a short, human-friendly name (e.g. `inventory-groups`), not the
+  full slug. Claude picks it and creates the empty directory at session start,
+  once the topic is settled — the plan agent suggests it. Related exercises
+  share a prefix so they cluster alphabetically. The full slug stays the
+  identity in `.history/` and `.index/`; the short name is recorded in the
+  session's `.index/sessions/<slug>/meta.yml` `file:` field, which is the
+  sole link between the two.
+- Managed-node containers for that exercise are named `{dir}-node1`,
+  `{dir}-node2`, ...
 - Every file inside an exercise directory — the playbook, every role, every
   template, the inventory, the `ansible.cfg` — is written by you, from
   scratch, Socratically guided. Claude never writes, completes, or suggests
-  concrete content for any of them (see "Hard constraints").
-- Each exercise has a companion notes file at `{target-dir}/{slug}.md` (a
+  concrete content for any of them (see "Hard constraints"). Creating the
+  empty directory itself is Claude's job, not content.
+- Each exercise has a companion notes file at `{target-dir}/{dir}.md` (a
   sibling of the exercise directory, same basename) — Claude-owned (see
   "Notes files ownership"). A review session (see "Theory review") has
   neither an exercise directory nor a notes file.
 - Claude may rename/regroup exercise directories to minimize naming clashes
   (shared prefix for related exercises) when a new exercise makes better
-  grouping obvious.
+  grouping obvious. A rename moves the directory and its notes file together
+  and updates that session's `meta.yml` `file:` field; the old `.history/`
+  entry's `file:` is left as written (immutability rule) — `meta.yml` is the
+  current location.
 
 ## Session selection
 
@@ -448,7 +461,7 @@ instead, so the next agent finds it in the same place.
 
 ## Notes files ownership
 
-- Every `{target-dir}/{slug}.md` file: Claude-owned, not yours.
+- Every `{target-dir}/{dir}.md` file: Claude-owned, not yours.
 - Write/update at session end; keep accurate, notation-consistent, useful
   for a future reviewer assessing understanding.
 - Every notes file needs a **Worked example**: concrete, non-trivial

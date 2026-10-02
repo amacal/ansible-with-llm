@@ -1,0 +1,6 @@
+title: "Child Group Nesting by OS Version (docker-local, rhel)"
+status: not-completed
+mentioned_by:
+  - "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
+evidence:
+  - ".history/2026-10/2026-10-02-multi-group-inventory-group-vars-and-precedence-docker-local-debian-rhel.yml: not_completed (rhel9/rhel10 version groups under [rhel:children] discussed, not built)"

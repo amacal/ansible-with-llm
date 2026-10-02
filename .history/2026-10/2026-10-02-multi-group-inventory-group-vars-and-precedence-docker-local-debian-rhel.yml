@@ -1,0 +1,63 @@
+date: "2026-10-02"
+title: "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
+session:
+  file: docker-local/inventory-groups/
+  status: completed
+  attempted:
+    - "Extend the inventory to a Debian 12 node and a Rocky 9 node, move connection variables from host lines into group_vars by owner, observe variable precedence across all, family group and host line, and verify the resolved values on the nodes with an assert playbook over all"
+  explored:
+    - "Which of the four inline connection variables are identical across the two nodes and which differ, and why"
+    - "Whether the Dockerfiles determine the Python binary path (both request python3; the distro default decides)"
+    - "ls -l /usr/bin/python3* on both containers via docker exec"
+    - "What the interpreter path is a property of: OS family and major version"
+    - "Implicit all and ungrouped groups in ansible-inventory --graph"
+    - "group_vars filename extension allow-list (YAML_FILENAME_EXTENSIONS) and the top-level-dict requirement"
+    - "YAML parsing of key=value as a single string vs key: value as a mapping"
+    - "Designing a precedence experiment so the result distinguishes the competing sources"
+    - "UNREACHABLE vs FAILED as connection-layer vs task-layer failures"
+    - "distribution vs os_family as the expected-value fact, with an AlmaLinux node as a hypothetical"
+    - "Division of labour between the distribution assert (group membership, input) and the interpreter assert (executed Python, result)"
+    - "Hypothetical Rocky 10 node in [rhel]: failure point and a rhel9/rhel10 version-group restructure via [rhel:children]"
+  tried:
+    - "Baseline inventory.ini with [debian] node1 and [rhel] node2, all four connection variables inline on each host line"
+    - "group_vars/rhel.ini containing ansible_python_interpreter=/usr/bin/python3.9"
+    - "Renamed to group_vars/rhel.yaml with the key=value line unchanged"
+    - "group_vars/rhel.yaml rewritten as key: value"
+    - "group_vars/all.yaml with ansible_user and ansible_private_key_file, group_vars/debian.yaml with the 3.11 interpreter, host lines reduced to ansible_host"
+    - "Added ansible_python_interpreter: /usr/bin/python3 to all.yaml"
+    - "Host-line ansible_python_interpreter=/usr/bin/python3 on node1, then /usr/bin/python3.9"
+    - "Ad-hoc ansible all -m ansible.builtin.ping before and after manually accepting host keys"
+    - "site.yml with hosts: debian, then hosts: all"
+    - "rhel.yaml expected distribution RedHat, then Rocky"
+  corrections:
+    - "Predicted group_vars/rhel.ini would supply the interpreter to node2; observed the variable absent with no error because .ini is not an allowed group_vars extension"
+    - "Predicted the renamed rhel.yaml with a key=value line would be unparsable; observed it parsed as a string and failed with \"expected dicts but got a 'dict' and a '_AnsibleTaggedStr'\""
+    - "Host-line override test initially used /usr/bin/python3, the same string as all.yaml, and was kept unchanged on the first retry; the result could not distinguish host line from all, corrected by using /usr/bin/python3.9 on node1"
+    - "Predicted the first ad-hoc ping would fail on node1 only (interpreter missing); observed UNREACHABLE on both nodes from host key verification, before any interpreter was used"
+    - "Predicted site.yml would report all ok on both hosts; observed only node1 ran because the play targeted hosts: debian"
+  bugs_found:
+    - "group_vars/rhel.ini silently ignored (extension not in allow-list); resolved by renaming to rhel.yaml"
+    - "rhel.yaml content written as key=value, parsed as a string and rejected; resolved with key: value"
+    - "Host keys of the recreated containers not in known_hosts, giving UNREACHABLE (Host key verification failed); resolved by accepting keys with a manual ssh"
+    - "site.yml targeted hosts: debian, so node2 was never checked; resolved with hosts: all"
+    - "rhel.yaml expected distribution RedHat while node2 reports Rocky, giving node2 ok=1 failed=1; resolved by setting Rocky"
+  completed:
+    - "Wrote docker-local/inventory-groups/ with ansible.cfg, inventory.ini ([debian] node1, [rhel] node2, ansible_host only), group_vars/all.yaml, debian.yaml, rhel.yaml and site.yml"
+    - "ansible-inventory --graph matched the predicted all/ungrouped/debian/rhel tree"
+    - "Confirmed via ansible-inventory --host that the group_vars refactor resolved identically to the all-inline baseline"
+    - "Observed debian.yaml overriding all.yaml, and the host line overriding both, for ansible_python_interpreter"
+    - "Observed node1 FAILED rc 127 (/usr/bin/python3.9: not found) and node2 SUCCESS with the host-line override in place; removed the override and both pinged SUCCESS"
+    - "Wrote site.yml over all with a distribution assert against a per-group expected value and an assert that ansible_facts['python']['executable'] equals ansible_python_interpreter"
+    - "Observed the distribution assert fail on node2 (ok=1 failed=1) with a wrong expected value"
+    - "Verified ok=3 changed=0 failed=0 for both hosts on two consecutive runs"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed:
+    - "Nesting rhel9/rhel10 version groups under [rhel:children], with shared values in rhel.yaml and interpreters in the version groups (discussed, not built)"
+    - "Host key handling for recreated containers remains deferred; the problem recurred this session as UNREACHABLE"
+  open_questions: —
+  notes:
+    - "Short exercise-directory convention adopted this session (CLAUDE.md Exercise files updated); directory docker-local/inventory-groups/ and notes docker-local/inventory-groups.md"
+    - "Previous session's directory renamed to docker-local/inventory-basics/ (plus inventory-basics.md); its .index meta.yml file field updated, its .history entry left as written"
+    - "Containers inventory-groups-node1 (Debian 12, 172.17.0.3) and inventory-groups-node2 (Rocky Linux 9.3, 172.17.0.4); first started under long-slug names, then recreated under the short names"
+    - "Rocky 9 /usr/bin/python3 links to python3.9; Debian 12 /usr/bin/python3 links to python3.11"
+    - "The expected-value variable is named distribution (no ansible_ prefix)"

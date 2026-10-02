@@ -1,8 +1,10 @@
 title: "Inventory and Connectivity"
 sessions:
   - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+  - "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
 frontier:
-  - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+  - "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
 explicit_future_targets:
   - "Host Key Checking for Recreated Containers (docker-local)"
   - "Docker Dynamic Inventory (docker-local)"
+  - "Child Group Nesting by OS Version (docker-local, rhel)"

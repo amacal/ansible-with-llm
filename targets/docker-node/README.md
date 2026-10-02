@@ -44,16 +44,16 @@ HOST_WS=$(docker inspect "$(hostname)" \
   --format '{{range .Mounts}}{{if eq .Destination "'"$PWD"'"}}{{.Source}}{{end}}{{end}}')
 
 docker build -t ansible-node-debian targets/docker-node/debian
-docker run -d --name <exercise-slug>-node1 \
+docker run -d --name <exercise-dir>-node1 \
   -v "$HOST_WS/.tmp/ansible_node_key.pub:/home/ansible/.ssh/authorized_keys:ro" \
   -p 0:22 ansible-node-debian
 # or targets/docker-node/rhel for the RHEL-family image
 
 # confirm the key mounted as a file, not a directory:
-docker exec <exercise-slug>-node1 ls -l /home/ansible/.ssh/
+docker exec <exercise-dir>-node1 ls -l /home/ansible/.ssh/
 
 # the address to connect to (port 22):
-docker inspect -f '{{.NetworkSettings.IPAddress}}' <exercise-slug>-node1
+docker inspect -f '{{.NetworkSettings.IPAddress}}' <exercise-dir>-node1
 ```
 
 The bridge IP, the key path, and every other connection detail belong in
@@ -66,7 +66,7 @@ instance of them.
 ## Tear down
 
 ```bash
-docker rm -f <exercise-slug>-node1 [<exercise-slug>-node2 ...]
+docker rm -f <exercise-dir>-node1 [<exercise-dir>-node2 ...]
 ssh-keygen -R <node-bridge-ip>   # drop the stale host key from ~/.ssh/known_hosts
 ```
 

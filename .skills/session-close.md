@@ -2,9 +2,9 @@ Write the notes file, the `.history/` entry, and the `.index/` session directory
 
 ## Steps
 
-1. **Identify the exercise and target.** Find the exercise directory (`{target-dir}/{slug}/`) created/primarily worked on this session, and which target environment it belongs to. Review session (no exercise directory) → identify the concept(s) consolidated instead, and the target(s) they concern.
+1. **Identify the exercise and target.** Find the exercise directory (`{target-dir}/{dir}/`, a short name — not the slug) created/primarily worked on this session, and which target environment it belongs to. Review session (no exercise directory) → identify the concept(s) consolidated instead, and the target(s) they concern.
 
-2. **Write the notes file** at `{target-dir}/{slug}.md` (sibling of the exercise directory, same basename) — **implementation sessions only**. Review session → skip this step entirely; review sessions get no companion `.md` notes file, per `.history/schema.yml`'s `file: — for review sessions` (the exercise's own earlier notes files are the reference; `.history`'s `completed`/`explored` fields and `.index`'s `summary.txt` carry the session record instead). Otherwise, follow CLAUDE.md's "Notes writing style" exactly:
+2. **Write the notes file** at `{target-dir}/{dir}.md` (sibling of the exercise directory, same basename) — **implementation sessions only**. Review session → skip this step entirely; review sessions get no companion `.md` notes file, per `.history/schema.yml`'s `file: — for review sessions` (the exercise's own earlier notes files are the reference; `.history`'s `completed`/`explored` fields and `.index`'s `summary.txt` carry the session record instead). Otherwise, follow CLAUDE.md's "Notes writing style" exactly:
    - Section order: `# Title`, `## Overview`, zero+ bespoke theory/mechanism sections, `## Observable behavior`, `## Internal mechanism`, `## Design rationale`, `## Edge cases` (if applicable), `## Worked example`.
    - No `## Depends on`/`## Unlocks` — relationship structure lives solely in `.index/`.
    - Full prose paragraphs only, everywhere, including the worked example — no bullets.
@@ -24,7 +24,7 @@ Write the notes file, the `.history/` entry, and the `.index/` session directory
    date: "YYYY-MM-DD"
    title: "Exact Concept Title"
    session:
-     file: docker-local/{slug}/   # or the correct target-dir, or — for a review session
+     file: docker-local/{dir}/   # or the correct target-dir, or — for a review session
      status: completed
      attempted: [...]
      explored: [...]

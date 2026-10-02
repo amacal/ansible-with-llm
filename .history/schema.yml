@@ -41,7 +41,7 @@ file_format:
     title: "exact Concept Title, double-quoted — must exactly match slug_algorithm(title) against the filename's slug"
     session:
       fields_in_order: [file, status, attempted, explored, tried, corrections, bugs_found, completed, not_completed, open_questions, notes]
-      file: "{target-dir}/{slug}/, trailing slash — the exercise is a directory (playbook + roles + inventory), not a single file, unlike math-with-llm/hard-with-llm. — for a review session (no new exercise, pure consolidation of prior ones)."
+      file: "{target-dir}/{dir}/ (the short exercise directory name at the time the entry was written, not the slug — later renames update .index meta.yml only), trailing slash — the exercise is a directory (playbook + roles + inventory), not a single file, unlike math-with-llm/hard-with-llm. — for a review session (no new exercise, pure consolidation of prior ones)."
       status: "completed"
       list_fields: [attempted, explored, tried, corrections, bugs_found, completed, not_completed, open_questions, notes]
       empty_field_convention: >

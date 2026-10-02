@@ -1,0 +1,1 @@
+Split a Debian 12 and a Rocky 9 docker-local node into family groups, moved connection variables into group_vars by owner, observed all < child group < host-line precedence for ansible_python_interpreter, and verified per-host distribution and executed interpreter with asserts over all that reported changed=0 on two runs

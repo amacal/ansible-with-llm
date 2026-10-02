@@ -77,7 +77,7 @@ directory_layout:
           title: "exact Concept Title, double-quoted"
           kind: "implementation | review"
           target: "docker-local | hetzner-cloud | aws"
-          file: "{target-dir}/{slug}/ for implementation sessions (trailing slash — an exercise is a directory), — for review sessions"
+          file: "{target-dir}/{dir}/ for implementation sessions (trailing slash — an exercise is a directory; {dir} is the short exercise directory name, not the slug — this field is the current location and is updated on rename), — for review sessions"
           date: "YYYY-MM-DD, double-quoted"
       summary.txt:
         format: "plain text, no YAML — a scalar needs no list syntax. One factual sentence, no trailing period requirement, no quoting."

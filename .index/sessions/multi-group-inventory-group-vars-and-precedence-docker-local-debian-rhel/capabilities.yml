@@ -1,0 +1,7 @@
+- "organize-group-vars-by-owner"
+- "resolve-variable-precedence"
+- "inspect-resolved-host-vars"
+- "design-distinguishing-precedence-test"
+- "assert-executed-interpreter"
+- "assert-facts-against-group-expectations"
+- "diagnose-unreachable-vs-failed"

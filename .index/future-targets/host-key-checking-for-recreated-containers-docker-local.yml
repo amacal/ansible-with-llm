@@ -2,5 +2,7 @@ title: "Host Key Checking for Recreated Containers (docker-local)"
 status: not-completed
 mentioned_by:
   - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+  - "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
 evidence:
   - ".history/2026-10/2026-10-02-inventory-ad-hoc-connectivity-and-facts-docker-local-debian.yml: not_completed (host key handling explicitly deferred)"
+  - ".history/2026-10/2026-10-02-multi-group-inventory-group-vars-and-precedence-docker-local-debian-rhel.yml: not_completed (recurred as UNREACHABLE, still deferred)"
