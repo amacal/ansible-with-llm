@@ -1,0 +1,207 @@
+# .index/schema.yml — authoritative schema for the .index/ directory tree.
+#
+# .index/ is a knowledge-graph tree: one small file per fact, never a monolithic index.
+# The core design principle: every fact is written exactly once, in exactly one file,
+# owned by the session/branch/future-target it belongs to. Anything that would normally
+# be a "reverse index" (who requires X, what has tag Y, what completed on date Z,
+# recent sessions, unfinished targets) is NOT stored anywhere here — it is a query, run
+# fresh with Grep/Glob whenever it's needed. This is deliberate: a maintained reverse
+# index can drift out of sync with the forward data it mirrors; a query computed from the
+# single source of truth cannot, because there is nothing else for it to disagree with.
+#
+# No script reads or writes this tree. Every read is a Grep/Glob/Read tool call; every
+# write is a Write/Edit tool call. This file is the spec those calls must follow — if the
+# actual tree ever disagrees with this file, this file wins; fix the tree, not the schema.
+#
+# There is no schema_version bump process defined yet — if this schema changes shape,
+# treat it as a deliberate, documented decision (edit this file, explain why), not silent
+# drift.
+
+schema_version: 1
+
+# ---------------------------------------------------------------------------
+# naming: how directory/file names are derived from the real identity (the exact title)
+# ---------------------------------------------------------------------------
+naming:
+  slug_algorithm: >
+    Lowercase the exact Concept Title or Branch Title or Target Title. Replace every
+    maximal run of characters outside [a-z0-9] with a single "-". Strip any leading or
+    trailing "-". Example: "Idempotent Nginx Install (docker-local, debian)" ->
+    "idempotent-nginx-install-docker-local-debian". Example: "Variable Precedence Across
+    group_vars and host_vars" -> "variable-precedence-across-group-vars-and-host-vars".
+  slug_is_not_authoritative: >
+    The slug is a directory-naming convenience only, never the identity itself. The exact
+    title string (as it appears in every meta.yml/title field and every cross-reference
+    list) is the single source of truth. Never reconstruct a title from a slug; always
+    store and compare the exact title string. A cross-reference list (prerequisites.yml
+    etc.) contains exact titles, not slugs — resolving a reference to a directory means:
+    apply slug_algorithm to the referenced title, then confirm sessions/<that
+    slug>/meta.yml's own title field matches exactly.
+  cross_target_disambiguation: >
+    When the same pattern recurs across target environments or OS families (see
+    CLAUDE.md's "Cross-target comparison"), the exact Concept Title includes that context
+    in parentheses — e.g. "Idempotent Nginx Install (docker-local, debian)" and
+    "Idempotent Nginx Install (docker-local, rhel)" — so the two sessions get distinct
+    slugs and the comparison is recorded as a related_to link between them, never
+    collapsed into one title.
+  collision_handling: >
+    If slug_algorithm ever produces the same slug for two different titles (not expected,
+    given the disambiguation rule above), the second one gets a numeric suffix appended to
+    the slug ("-2", "-3", ...) — the file's own title field remains the sole disambiguator
+    regardless.
+
+# ---------------------------------------------------------------------------
+# empty_field_convention: applies to every list-valued file listed below
+# ---------------------------------------------------------------------------
+empty_field_convention: >
+  Every field file enumerated under directory_layout always exists — never omitted, even
+  when the field has no values. A populated list field is a YAML list of double-quoted
+  strings. An empty list field's entire content is the single scalar line "—" (never an
+  empty list "[]", never a file mixing "—" with real entries). `ls` on a session's
+  directory should always show the same fixed set of files, so a missing file is
+  immediately visible as an error, never mistaken for "empty".
+
+# ---------------------------------------------------------------------------
+# directory_layout
+# ---------------------------------------------------------------------------
+directory_layout:
+
+  sessions:
+    path: ".index/sessions/<slug>/"
+    one_directory_per: "one completed session (kind: implementation or review)"
+    files:
+      meta.yml:
+        format: "YAML mapping, every value a scalar"
+        fields_in_order: [title, kind, target, file, date]
+        field_notes:
+          title: "exact Concept Title, double-quoted"
+          kind: "implementation | review"
+          target: "docker-local | hetzner-cloud | aws"
+          file: "{target-dir}/{slug}/ for implementation sessions (trailing slash — an exercise is a directory), — for review sessions"
+          date: "YYYY-MM-DD, double-quoted"
+      summary.txt:
+        format: "plain text, no YAML — a scalar needs no list syntax. One factual sentence, no trailing period requirement, no quoting."
+      prerequisites.yml: {format: "YAML list of exact Concept Titles this session normally-necessary-before requires, or —"}
+      uses_concepts.yml: {format: "YAML list of exact Concept Titles actively applied here without being required first, or —"}
+      derived_from.yml: {format: "YAML list of exact Concept Titles this is a direct continuation of (harder variant, thin retarget to a new target environment, an alternative approach to the same exercise), or —"}
+      related_to.yml: {format: "YAML list of exact Concept Titles with a meaningful non-prerequisite relationship — most importantly a cross-target comparison pair — or —"}
+      unlocks.yml: {format: "YAML list of exact Concept Titles or Target Titles this session prepares for, or —"}
+      future_targets.yml: {format: "YAML list of Target Titles this session newly names as future work (mirrors — and must stay consistent with — the corresponding .index/future-targets/*.yml files), or —"}
+      concepts.yml: {format: "YAML list of lowercase-dash-separated concept tags (e.g. inventory, handlers, templates, vault, idempotency, dynamic-inventory), or —"}
+      capabilities.yml: {format: "YAML list of lowercase-dash-separated capability tags (e.g. write-idempotent-package-task, template-config-with-handler, encrypt-var-with-vault), or —"}
+    omitted_on_purpose:
+      reuses_code: >
+        Not a separate file. Genuine from-scratch work per CLAUDE.md's "Hard constraints"
+        means verbatim reuse across exercises should be rare; when an exercise is a real
+        continuation of a prior one it belongs in derived_from.yml instead — a thin retarget
+        of a previous role to a new target environment IS a derived_from relationship, not
+        a distinct "reused code" fact needing its own field.
+
+  future_targets:
+    path: ".index/future-targets/<slug>.yml"
+    one_file_per: "a topic named as future work but not yet its own completed session"
+    format: "YAML mapping, all scalar except mentioned_by/evidence"
+    fields_in_order: [title, status, mentioned_by, evidence]
+    field_notes:
+      title: "exact Target Title, double-quoted"
+      status: "always not-completed (a file existing here IS the not-completed signal)"
+      mentioned_by: "YAML list of exact Concept Titles whose session named this target (never —, always at least one)"
+      evidence: "YAML list of citation strings, e.g. a specific .history/ entry's field (never —, always at least one)"
+    lifecycle: >
+      Created when a session names new future work. Deleted (the file is removed, not
+      edited to some other status) the moment the target becomes its own completed
+      sessions/<slug>/ directory — a title can never be both a future-targets/*.yml file
+      and a sessions/*/meta.yml title at the same time.
+
+  branches:
+    path: ".index/branches/<slug>.yml"
+    one_file_per: "a real cluster of related sessions discovered from the prerequisite/derived_from graph, not a forced taxonomy"
+    format: "YAML mapping"
+    fields_in_order: [title, sessions, frontier, explicit_future_targets]
+    field_notes:
+      title: "exact Branch Title, double-quoted"
+      sessions: "YAML list of exact Concept Titles in this branch, chronological, never — (a branch always has at least one session)"
+      frontier: "YAML list of exact Concept Titles — completed sessions in this branch with no completed descendant inside the same branch, or the branch's most recently dated session; never —"
+      explicit_future_targets: "YAML list of Target Titles named as this branch's own next steps, or —"
+
+  open_gaps:
+    path: ".index/open-gaps/<category>/<slug>.yml"
+    categories: [missing-intermediate-topics, unresolved-idempotency-questions, unverified-cross-target-claims]
+    one_file_per: "one conservative, evidence-only open question (never invented curriculum), filed under its category"
+    format: "YAML mapping"
+    fields_in_order: [claim, status, evidence]
+    field_notes:
+      claim: "the specific unresolved statement, double-quoted"
+      status: "free text describing the current state, e.g. \"confirmed idempotent on docker-local/debian; not yet verified on rhel\""
+      evidence: "YAML list of citation strings, never —"
+    empty_category: >
+      A category with nothing open in it has no directory at all (not an empty directory,
+      not a placeholder file) — `ls .index/open-gaps/` shows exactly which categories
+      currently have something outstanding.
+    notes: "curated prose, written/edited rarely — not derived from anything mechanical"
+
+  selection_context:
+    path: ".index/selection-context/"
+    curated_files:
+      active-branches.yml: {format: "YAML list of Branch Titles", curation: "hand-curated judgment, edited only when a branch genuinely becomes/stops being active"}
+      candidate-signals.yml:
+        format: "YAML mapping: continuation, consolidation, new_branch, explicit_commitment — each a YAML list of prose strings, or — if empty"
+        curation: "hand-curated judgment"
+      reusable-recent-capabilities.yml:
+        format: "YAML list of capability tags"
+        curation: >
+          Hand-curated judgment, NOT a mechanical rolling window — edit by hand, or leave
+          unchanged, at each close rather than trying to derive it with a formula.
+    computed_not_stored:
+      recent_sessions: >
+        Not a file. Compute on demand: read date from every sessions/*/meta.yml, sort
+        descending, take the top N.
+      explicit_unfinished_targets: >
+        Not a file. Compute on demand: `ls .index/future-targets/` gives exactly this list
+        in title form (read each file's title field).
+
+  edges:
+    path: ".index/edges/<slug>.yml"
+    one_file_per: "one non-obvious/inferred/historically-important relationship a session's own fields would understate"
+    format: "YAML mapping"
+    fields_in_order: [from, to, type, confidence, evidence]
+    field_notes:
+      from: "exact Concept Title, double-quoted"
+      to: "exact Concept Title, double-quoted"
+      type: "free text describing the relationship, e.g. \"not_a_prerequisite\" | \"related\" — whatever distinction the edge exists to record"
+      confidence: "free text, e.g. \"explicit\" | \"high\" | \"medium\" | \"low\", so a weak inference is never presented as fact"
+      evidence: "YAML list of citation strings, never —"
+    notes: "curated, written rarely — not a duplicate of a session's own related_to (see CLAUDE.md's Fast index section for the distinction)"
+
+# ---------------------------------------------------------------------------
+# computed_queries: the read-side replacement for every old reverse index.
+# None of these are ever written to disk. Run the Grep/Glob call fresh every time.
+# ---------------------------------------------------------------------------
+computed_queries:
+  titles: "ls .index/sessions/   (directory names are slugs; read meta.yml's title field for the exact string)"
+  required_by: 'grep -rl "<exact Concept Title>" .index/sessions/*/prerequisites.yml'
+  uses_by: 'grep -rl "<exact Concept Title>" .index/sessions/*/uses_concepts.yml'
+  concept_lookup: 'grep -rl "<tag>" .index/sessions/*/concepts.yml'
+  capability_lookup: 'grep -rl "<tag>" .index/sessions/*/capabilities.yml'
+  concept_frequency: "grep -h '^- ' .index/sessions/*/concepts.yml | sed 's/^- //' | sort | uniq -c | sort -rn   (tag counts across every session — use to see which areas are saturated vs. barely touched; feeds session-select's breadth check)"
+  capability_frequency: "grep -h '^- ' .index/sessions/*/capabilities.yml | sed 's/^- //' | sort | uniq -c | sort -rn"
+  target_frequency: "grep -h '^target:' .index/sessions/*/meta.yml | sort | uniq -c | sort -rn   (how sessions are distributed across docker-local/hetzner-cloud/aws)"
+  completed_by_date: "grep -h '^  date:' .index/sessions/*/meta.yml | sort"
+  by_date: 'grep -l "date: \"<YYYY-MM-DD>\"" .index/sessions/*/meta.yml'
+  future_targets_list: "ls .index/future-targets/"
+  branch_membership: 'grep -l "<exact Concept Title>" .index/branches/*.yml'
+
+# ---------------------------------------------------------------------------
+# validation: no script (deliberate choice — see CLAUDE.md's Tooling section for why).
+# An agent runs these checks directly with Grep/Glob as part of closing/verifying a
+# session. Each check below is phrased as something a Grep/Glob call can answer directly.
+# ---------------------------------------------------------------------------
+validation:
+  checks:
+    - "every sessions/<slug>/ directory contains exactly the 10 files enumerated above (meta.yml + summary.txt + 8 list fields) — none missing, none extra"
+    - "every title referenced in any prerequisites.yml/uses_concepts.yml/derived_from.yml/related_to.yml/unlocks.yml resolves to some sessions/*/meta.yml's title field"
+    - "every title referenced in any sessions/*/future_targets.yml resolves to either a sessions/*/meta.yml title or a future-targets/*.yml title, and the corresponding future-targets/*.yml's mentioned_by list includes this session back"
+    - "no future-targets/<slug>.yml title is also a sessions/*/meta.yml title (a target must be deleted the moment it graduates)"
+    - "every branches/*.yml's sessions and frontier entries resolve to a real sessions/*/meta.yml title"
+    - "every concepts.yml/capabilities.yml tag matches ^[a-z0-9]+(-[a-z0-9]+)*$"
+    - "meta.yml's target field is one of docker-local | hetzner-cloud | aws, and matches the target implied by the file field's directory prefix"

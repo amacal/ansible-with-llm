@@ -1,0 +1,99 @@
+# .history/schema.yml — authoritative schema for the .history/ directory tree.
+#
+# .history/ is one file per session-closing entry — never a monolithic per-month or
+# per-year file. This makes the "Historical immutability rule" (see CLAUDE.md's Session
+# history section) physically enforced rather than just a written policy: adding a new
+# entry is creating a new file, which cannot touch any byte of any other entry's file.
+# `ls .history` and `ls .history/<YYYY-MM>` already sort chronologically as plain strings,
+# so no chaining/header fields are needed to link entries together.
+#
+# No script reads or writes this tree. Every read is a Grep/Glob/Read tool call; every
+# write is a single Write call creating one new file. This file is the spec those calls
+# must follow — if the actual tree ever disagrees with this file, this file wins; fix the
+# tree, not the schema.
+
+schema_version: 1
+
+# ---------------------------------------------------------------------------
+# directory_layout
+# ---------------------------------------------------------------------------
+directory_layout:
+  path: ".history/<YYYY-MM>/<YYYY-MM-DD>-<slug>.yml"
+  one_file_per: "one completed session (implementation or review)"
+  slug: "same slug_algorithm as .index/schema.yml, derived from the exact Concept Title — present in the filename purely so directory listings are human-scannable; the file's own title field is still what's authoritative"
+  ordering: >
+    Chronological order falls out of directory/filename listing for free: `ls .history`
+    sorted gives month order, `ls .history/<YYYY-MM>` sorted gives day order within a
+    month, and same-day entries sort by slug (arbitrary but stable) — same-day ordering
+    is not semantically meaningful beyond "both happened that day".
+  month_directory_creation: >
+    A month directory is created the first time an entry falls in it — nothing to
+    backfill, no header file needed.
+
+# ---------------------------------------------------------------------------
+# file_format
+# ---------------------------------------------------------------------------
+file_format:
+  format: "one YAML mapping per file"
+  fields_in_order: [date, title, session]
+  field_notes:
+    date: "YYYY-MM-DD, double-quoted — must exactly match the filename's date"
+    title: "exact Concept Title, double-quoted — must exactly match slug_algorithm(title) against the filename's slug"
+    session:
+      fields_in_order: [file, status, attempted, explored, tried, corrections, bugs_found, completed, not_completed, open_questions, notes]
+      file: "{target-dir}/{slug}/, trailing slash — the exercise is a directory (playbook + roles + inventory), not a single file, unlike math-with-llm/hard-with-llm. — for a review session (no new exercise, pure consolidation of prior ones)."
+      status: "completed"
+      list_fields: [attempted, explored, tried, corrections, bugs_found, completed, not_completed, open_questions, notes]
+      empty_field_convention: >
+        Every list_field always present — never omitted. Empty is the literal scalar —
+        (never an empty list, never mixed with real entries). bugs_found is always — for
+        a review session (no new code written, no defect possible).
+  field_semantics: >
+    See CLAUDE.md's "Session history (.history/)" section for what belongs in attempted /
+    explored / tried / corrections / bugs_found / completed / not_completed / open_questions
+    / notes (observable session events only; no module/variable-precedence exposition or
+    idempotency-correctness arguments — those belong in the session's notes file; no
+    personal/psychological content). This schema file only documents shape and location,
+    not field meaning.
+
+# ---------------------------------------------------------------------------
+# immutability
+# ---------------------------------------------------------------------------
+immutability:
+  rule: >
+    An entry file, once written, is modified only to correct a factual error, fix
+    formatting, correct the filename/date, or add something genuinely part of that same
+    session that was accidentally omitted — never because a later session discovers a new
+    dependency, reuses something from it, or changes a future target named in it. Those
+    retrospective changes belong in .index/ instead (.index/ may change retrospectively as
+    understanding improves; .history/ may not — that asymmetry is the whole point of
+    keeping the two trees separate).
+  physical_enforcement: >
+    Because every entry is its own file, this rule is partly self-enforcing: writing a new
+    entry can never accidentally touch an old one (there is no shared file to mis-splice
+    into). What is not self-enforcing — an agent deliberately editing an old entry's file
+    for the wrong reason — still relies on this policy and on session-verify-style review.
+
+# ---------------------------------------------------------------------------
+# computed_queries: read-side only, nothing here is ever persisted
+# ---------------------------------------------------------------------------
+computed_queries:
+  all_files: "ls .history/*/*.yml"
+  recent_n: "ls .history/*/*.yml sorted by path, take the last N"
+  by_title: "grep -l '\"<Exact Title>\"' .history/*/*.yml"
+  by_file: "grep -l 'file: <path>' .history/*/*.yml"
+  by_target_dir: "grep -l 'file: <target-dir>/' .history/*/*.yml   (e.g. 'file: docker-local/' for every Docker-local session)"
+  since_date: "ls .history/*/*.yml, keep filenames whose YYYY-MM-DD prefix is >= the target date"
+  grep: "grep -r '<term>' .history/*/*.yml"
+
+# ---------------------------------------------------------------------------
+# validation: no script — an agent checks these directly with Grep/Glob at close time
+# ---------------------------------------------------------------------------
+validation:
+  checks:
+    - "the entry's filename date matches its own date: field exactly"
+    - "the entry's filename slug matches slug_algorithm(title) exactly"
+    - "session's fields_in_order are all present, none omitted, none extra"
+    - "every list_field is either the scalar — or a non-empty YAML list, never mixed"
+    - "a review entry has bugs_found: — and file: —; an implementation entry's file ends in a trailing slash under a real target directory"
+    - "no entry file other than the one just written was modified this session, unless the change matches one of the immutability rule's explicit exceptions"
