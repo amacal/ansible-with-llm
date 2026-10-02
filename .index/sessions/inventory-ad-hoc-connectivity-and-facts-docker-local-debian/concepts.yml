@@ -1,0 +1,8 @@
+- "inventory"
+- "connection-variables"
+- "ansible-cfg"
+- "ad-hoc-commands"
+- "facts"
+- "interpreter-discovery"
+- "assert"
+- "idempotency"

@@ -1,0 +1,64 @@
+date: "2026-10-02"
+title: "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+session:
+  file: docker-local/inventory-ad-hoc-connectivity-and-facts-docker-local-debian/
+  status: completed
+  attempted:
+    - "Connect the controller to one Debian 12 docker-local node through a hand-written inventory.ini and per-exercise ansible.cfg, run ad-hoc ping and setup, and verify node facts with an assert playbook"
+  explored:
+    - "Whether the node address belongs in inventory.ini or ansible.cfg (per-host vs per-exercise)"
+    - "Static inventory as declaration vs discovery, using a hypothetical IP change after container recreation"
+    - "Host alias vs ansible_host"
+    - "ansible-doc -t connection ansible.builtin.ssh option sections: vars: vs ini:"
+    - "Interpreter discovery warning, pinning ansible_python_interpreter vs interpreter_python=auto_silent, and /usr/bin/python3.11 vs /usr/bin/python3 under a hypothetical Debian 13 upgrade"
+    - "ansible.cfg search order (ANSIBLE_CONFIG, ./ansible.cfg, ~/.ansible.cfg, /etc/ansible/ansible.cfg) checked with ansible --version from the exercise dir and the repo root"
+    - "Source of setup's distribution facts (/etc/os-release on the node) and the JSON-over-SSH return path"
+    - "String-typed ansible_distribution_major_version and the result of comparing \"12\" == 12"
+    - "Prefixed fact names in ad-hoc setup output vs unprefixed keys inside ansible_facts in a playbook"
+    - "What a second run proves for a read-only playbook, and whether asserts detect a replaced machine"
+    - "Why ping module rather than ICMP or ssh true as the connectivity test"
+  tried:
+    - "inventory.ini with one variable per line under [debian]"
+    - "Single host line with comma-separated address/user/key variables and no host name"
+    - "Host line node1 with address= and private_key_file= variables"
+    - "ansible_host=127.0.0.3 and key path /workspaces/ansible-with-llm/tmp/ansible_node_key"
+    - "Pinned ansible_python_interpreter=/usr/bin/python3.11 on node1"
+    - "ansible.cfg with [defaults] inventory = inventory.ini"
+    - "Ad-hoc ping from the repo root with no -i"
+    - "site.yml asserts using ansible_facts['ansible_distribution'] and a string comparison of the major version"
+    - "Temporarily changing the version assert to 13 to confirm the assert can fail"
+  corrections:
+    - "Read the ansible-inventory --graph output as one host; recounting the |-- entries showed three hosts named address=127.0.0.3, user=ansible and key=..."
+    - "Predicted Ansible would use variables named address, user and key for the SSH connection; corrected after checking the ssh plugin's vars: list (ansible_host, ansible_user/ansible_ssh_user, ansible_private_key_file/ansible_ssh_private_key_file)"
+    - "Took private_key_file (the ini: key for ansible.cfg) as an inventory variable name; corrected to ansible_private_key_file from the vars: section"
+    - "Predicted that after pinning the interpreter, the previously discovered interpreter value would be reported again; corrected to: no discovery runs, so no discovered_interpreter_python entry appears (observed)"
+    - "Predicted ansible.cfg is looked up only in the current directory; corrected to the four-step search order"
+    - "Predicted the ad-hoc ping from the repo root with no inventory would fail; observed three warnings and exit code 0"
+    - "Stated comparing a string to 12 would fail; refined to: \"12\" == 12 evaluates to False without error"
+    - "Predicted the task after a failed assert would be skipped; observed skipped=0 because the failed host is removed from the rest of the play"
+  bugs_found:
+    - "Multi-line host entry created three bogus hosts; resolved by putting the name and all variables on one line"
+    - "Comma separators became part of variable values (user = 'ansible,'); resolved by whitespace separation"
+    - "No host name, so address=127.0.0.3, became the host name; resolved by naming the host node1"
+    - "Non-reserved variable names address/user/key ignored by the connection plugin; resolved with ansible_host/ansible_user/ansible_private_key_file"
+    - "private_key_file used as an inventory variable; resolved to ansible_private_key_file"
+    - "ansible_host=127.0.0.3 typo; resolved to 172.17.0.3"
+    - "Key path used tmp instead of .tmp, giving UNREACHABLE (no such identity / Permission denied (publickey,password)); resolved"
+    - "Version assert compared the string fact to \"12\", then to bare 12 (the file on disk lacked the described | int); resolved with | int == 12"
+    - "Asserts used ansible_facts['ansible_distribution'], failing with \"object of type 'dict' has no attribute 'ansible_distribution'\"; resolved with unprefixed keys"
+  completed:
+    - "Wrote inventory.ini with node1 in [debian] using ansible_host, ansible_user, ansible_private_key_file and ansible_python_interpreter"
+    - "Wrote ansible.cfg setting [defaults] inventory; confirmed config file path from the exercise dir and None from the repo root"
+    - "Ad-hoc ping returned SUCCESS/pong/changed false with no interpreter warning after pinning"
+    - "Ad-hoc setup filtered to ansible_distribution* returned Debian, \"12\", bookworm, from /etc/os-release"
+    - "Wrote site.yml with three asserts (distribution, major version as int, user_id)"
+    - "Verified ok=4 changed=0 failed=0 on two consecutive runs and under --check"
+    - "Deliberate 13 assert produced ok=2 failed=1 skipped=0; reverted and re-verified ok=4 changed=0"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed:
+    - "Host key handling for recreated containers (host_key_checking / known_hosts) explicitly deferred to a later exercise"
+  open_questions: —
+  notes:
+    - "The first ad-hoc ping runs (wrong IP, then UNREACHABLE on the key path) and the first playbook run (failed=1) were executed before a prediction was stated"
+    - "Node container started with the workspace's host-side path for the authorized_keys bind mount and reached on its bridge IP 172.17.0.3:22 (Docker-outside-of-Docker); targets/docker-node/README.md's $(pwd) mount and 127.0.0.1 port mapping do not work from the devcontainer"
+    - "Dynamic inventory plugins were named as a later topic that solves the static-IP problem"

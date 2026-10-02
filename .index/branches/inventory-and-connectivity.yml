@@ -1,0 +1,8 @@
+title: "Inventory and Connectivity"
+sessions:
+  - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+frontier:
+  - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+explicit_future_targets:
+  - "Host Key Checking for Recreated Containers (docker-local)"
+  - "Docker Dynamic Inventory (docker-local)"

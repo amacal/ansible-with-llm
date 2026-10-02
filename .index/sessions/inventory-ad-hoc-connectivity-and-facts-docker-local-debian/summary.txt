@@ -1,0 +1,1 @@
+Wrote a static INI inventory and per-exercise ansible.cfg for one Debian 12 docker-local node, proved connectivity with ad-hoc ping, read distribution facts with setup, and verified them with an assert playbook that reported changed=0 on two runs and was shown able to fail

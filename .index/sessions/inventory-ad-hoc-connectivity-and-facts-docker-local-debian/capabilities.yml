@@ -1,0 +1,6 @@
+- "write-static-ini-inventory"
+- "configure-per-exercise-ansible-cfg"
+- "run-adhoc-ping-and-setup"
+- "pin-python-interpreter"
+- "assert-on-facts"
+- "diagnose-unreachable-vs-failed"

@@ -1,0 +1,6 @@
+title: "Docker Dynamic Inventory (docker-local)"
+status: not-completed
+mentioned_by:
+  - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+evidence:
+  - ".history/2026-10/2026-10-02-inventory-ad-hoc-connectivity-and-facts-docker-local-debian.yml: notes (dynamic inventory plugins named as a later topic solving the static-IP problem)"
