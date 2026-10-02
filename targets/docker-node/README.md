@@ -25,21 +25,41 @@ CLAUDE.md's "Hard constraints").
 
 ## Spin up a node
 
+The devcontainer talks to the host's Docker daemon (Docker-outside-of-Docker),
+which has two consequences. First, a `-v` bind-mount source is resolved on the
+*host*, where `/workspaces/...` does not exist — Docker silently creates an
+empty directory there instead, `authorized_keys` becomes a directory, and SSH
+fails with `Permission denied (publickey)`. The mount must use the host-side
+path of the workspace, looked up from the devcontainer's own mounts. Second,
+`-p 0:22` publishes on the host's interfaces, not the devcontainer's
+`127.0.0.1`, so the node is reached directly on its bridge IP at port 22
+(the devcontainer and the node share Docker's default bridge network).
+
 ```bash
 # once per sitting, if not already generated:
 ssh-keygen -t ed25519 -f .tmp/ansible_node_key -N "" -q
 
+# host-side path of this workspace (run from the repo root):
+HOST_WS=$(docker inspect "$(hostname)" \
+  --format '{{range .Mounts}}{{if eq .Destination "'"$PWD"'"}}{{.Source}}{{end}}{{end}}')
+
 docker build -t ansible-node-debian targets/docker-node/debian
 docker run -d --name <exercise-slug>-node1 \
-  -v "$(pwd)/.tmp/ansible_node_key.pub:/home/ansible/.ssh/authorized_keys:ro" \
+  -v "$HOST_WS/.tmp/ansible_node_key.pub:/home/ansible/.ssh/authorized_keys:ro" \
   -p 0:22 ansible-node-debian
 # or targets/docker-node/rhel for the RHEL-family image
 
-docker port <exercise-slug>-node1 22   # find the mapped host port
+# confirm the key mounted as a file, not a directory:
+docker exec <exercise-slug>-node1 ls -l /home/ansible/.ssh/
+
+# the address to connect to (port 22):
+docker inspect -f '{{.NetworkSettings.IPAddress}}' <exercise-slug>-node1
 ```
 
-The mapped port, the key path, and every other connection detail belong in
-that exercise's own `inventory.ini` and `ansible.cfg` — never here. This file
+The bridge IP, the key path, and every other connection detail belong in
+that exercise's own `inventory.ini` and `ansible.cfg` — never here. The IP is
+ephemeral (valid only for that container's lifetime), so an exercise's
+inventory is valid only for the sitting that started its node. This file
 describes the two shared images; it says nothing about any one exercise's
 instance of them.
 
@@ -47,6 +67,7 @@ instance of them.
 
 ```bash
 docker rm -f <exercise-slug>-node1 [<exercise-slug>-node2 ...]
+ssh-keygen -R <node-bridge-ip>   # drop the stale host key from ~/.ssh/known_hosts
 ```
 
 Every node is ephemeral: destroyed at the end of the sitting that created it,

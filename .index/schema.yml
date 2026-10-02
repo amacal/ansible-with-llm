@@ -199,7 +199,8 @@ computed_queries:
 validation:
   checks:
     - "every sessions/<slug>/ directory contains exactly the 10 files enumerated above (meta.yml + summary.txt + 8 list fields) — none missing, none extra"
-    - "every title referenced in any prerequisites.yml/uses_concepts.yml/derived_from.yml/related_to.yml/unlocks.yml resolves to some sessions/*/meta.yml's title field"
+    - "every title referenced in any prerequisites.yml/uses_concepts.yml/derived_from.yml/related_to.yml resolves to some sessions/*/meta.yml's title field"
+    - "every title referenced in any sessions/*/unlocks.yml resolves to either a sessions/*/meta.yml title or a future-targets/*.yml title"
     - "every title referenced in any sessions/*/future_targets.yml resolves to either a sessions/*/meta.yml title or a future-targets/*.yml title, and the corresponding future-targets/*.yml's mentioned_by list includes this session back"
     - "no future-targets/<slug>.yml title is also a sessions/*/meta.yml title (a target must be deleted the moment it graduates)"
     - "every branches/*.yml's sessions and frontier entries resolve to a real sessions/*/meta.yml title"
