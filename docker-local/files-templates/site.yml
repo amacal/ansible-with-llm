@@ -1,0 +1,54 @@
+---
+- name: Prepare Docker
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Collect Public Host Keys
+      delegate_to: localhost
+      register: host_key_result
+      changed_when: false
+      check_mode: false
+      community.docker.docker_container_exec:
+        container: "{{ inventory_hostname }}"
+        command: "cat /etc/ssh/ssh_host_ecdsa_key.pub"
+
+    - name: Write Public Host Keys to File
+      delegate_to: localhost
+      throttle: 1
+      ansible.builtin.known_hosts:
+        path: /workspaces/ansible-with-llm/docker-local/files-templates/known_hosts
+        name: "{{ ansible_ssh_host }}"
+        key: "{{ ansible_ssh_host }} {{ host_key_result.stdout }}"
+
+    - name: Install CRON package
+      become: true
+      ansible.builtin.package:
+        name: "{{ cron_package }}"
+        state: present
+
+    - name: Collect Distribution Facts
+      ansible.builtin.setup:
+        gather_subset:
+          - distribution
+
+    - name: Render CRON template
+      become: true
+      ansible.builtin.template:
+        src: templates/mycron.j2
+        dest: /etc/cron.d/mycron
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Verify CRON Job is Installed
+      register: cron_stat_result
+      ansible.builtin.stat:
+        path: /etc/cron.d/mycron
+
+    - name: Assert CRON Job is Installed
+      ansible.builtin.assert:
+        that:
+          - cron_stat_result.stat.exists
+          - cron_stat_result.stat.mode == '0644'
+          - cron_stat_result.stat.uid == 0
+          - cron_stat_result.stat.gid == 0

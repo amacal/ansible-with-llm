@@ -1,0 +1,5 @@
+title: "Jinja2 Templates and --diff (docker-local, debian+rhel)"
+kind: implementation
+target: docker-local
+file: docker-local/files-templates/
+date: "2026-10-03"

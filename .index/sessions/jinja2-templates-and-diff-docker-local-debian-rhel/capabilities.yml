@@ -1,0 +1,7 @@
+- "render-per-host-config-with-template"
+- "declare-file-owner-group-mode"
+- "read-diff-for-content-and-attribute-drift"
+- "identify-check-mode-blind-spots"
+- "serialize-delegated-controller-writes-with-throttle"
+- "verify-file-metadata-with-stat"
+- "test-an-assert-can-fail"

@@ -1,0 +1,5 @@
+---
+ansible_python_interpreter: /usr/bin/python3.9
+distribution: Rocky
+cron_package: cronie
+cron_schedule: "45 1 * * 1"

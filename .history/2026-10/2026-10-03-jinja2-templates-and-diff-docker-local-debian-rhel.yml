@@ -1,0 +1,64 @@
+date: "2026-10-03"
+title: "Jinja2 Templates and --diff (docker-local, debian+rhel)"
+session:
+  file: docker-local/files-templates/
+  status: completed
+  attempted:
+    - "Render /etc/cron.d/mycron with ansible.builtin.template on a Debian 12 and a Rocky 9 node, comment line from distribution facts and schedule from per-family group_vars, owned root:root mode 0644, verified with stat and assert, idempotent on a second run and on freshly recreated containers"
+  explored:
+    - "What an idempotent file task must compare: desired content on the controller vs actual file on the node"
+    - "Per-host rendering with that host's group_vars and facts, and why rendering happens on the controller"
+    - "Checksum comparison with transfer only on mismatch; Ansible uses SHA1 for this"
+    - "Why a render date in a template reports changed on every run"
+    - "Content checksum vs separately checked owner/group/mode"
+    - "Unquoted mode: 644 parsed as decimal (octal 1204) vs quoted '0644'"
+    - "Lost update between parallel delegate_to: localhost known_hosts task instances, and the throttle task keyword"
+    - "Facts vs a group_vars distribution value as the source for the comment line"
+    - "Why gather_facts: true on the host-key seeding play would fail on fresh nodes; explicit ansible.builtin.setup after seeding instead"
+    - "Template src lookup in templates/ next to the playbook"
+    - "/etc/cron.d line format (five schedule fields, user field, command)"
+    - "Which real-run steps check mode skips (move into /etc/cron.d, chown to root) and why a missing become passes check mode"
+    - "Text diff for content drift vs attribute diff for mode-only drift, and the matching mtime behavior"
+    - "Separate stat verification vs asserting on the template task's own return"
+    - "Testing the assert itself with --start-at-task"
+    - "Task order as a precondition: cronie creates /etc/cron.d on Rocky; Debian ships the directory"
+  tried:
+    - "site.yml with host-key seeding play plus cron package install, written from scratch following the packages-become pattern"
+    - "known_hosts task without throttle, then with throttle: 1"
+    - "Template rendering a bare distribution line with no comment marker and no cron line"
+    - "Template task with mode only, then with owner and group added"
+    - "Hardcoded schedule 30 2 * * 1 in the template, then moved to cron_schedule in group_vars/debian.yaml and rhel.yaml"
+    - "--check --diff with the template task lacking become"
+    - "Hand-appended line on node1 and chmod 666 on node2, then a corrective run with --diff"
+    - "Changing rhel cron_schedule from 30 1 * * 1 to 45 1 * * 1"
+    - "Assert on stat.exists only, then extended to mode, uid and gid"
+    - "--start-at-task \"Verify CRON Job is Installed\" against node2 with mode 0666"
+  corrections:
+    - "Predicted only the cron install task would report changed on the first real run; observed the known_hosts task changed on both hosts, the known_hosts file held only node2's line, and node1's install was UNREACHABLE with \"Host key verification failed\""
+    - "Initially predicted \"all changed except template ok\" for the run after adding become; restated as only the template task changed, which matched the run"
+  bugs_found:
+    - "Parallel delegated known_hosts tasks lost node1's entry (lost update, last rename won); resolved with throttle: 1 on that task"
+    - "Template initially rendered a bare \"Debian 12\" line, invalid as a cron.d line; fixed with a # comment and a cron line"
+    - "Template task initially declared mode without owner/group; owner: root and group: root added"
+    - "Schedule hardcoded in the template so both families got the same line; moved to group_vars cron_schedule"
+    - "Template task lacked become; --check --diff reported changed but a real run would fail at the move into /etc/cron.d and chown; become: true added"
+    - "Assert initially checked only stat.exists; extended to mode == '0644', uid == 0 and gid == 0"
+  completed:
+    - "Wrote docker-local/files-templates/ with ansible.cfg, docker.yml, group_vars/all.yaml, debian.yaml, rhel.yaml, site.yml and templates/mycron.j2"
+    - "--check --diff showed changed on both nodes with an empty before side and an after side labeled with a controller temp path"
+    - "Real run created /etc/cron.d/mycron root:root 0644 with per-family comment and schedule; second run changed=0"
+    - "Content drift on node1 corrected with a text diff and new mtime; mode drift on node2 corrected with a mode-only diff and unchanged mtime"
+    - "rhel cron_schedule change produced changed on node2 only with a single -/+ line pair; node1 ok"
+    - "Assert shown to fail on node2 (stat.mode == '0644') when run via --start-at-task with mode 0666"
+    - "Freshly recreated containers: first run changed=2 per host with asserts passing, immediate second run changed=0"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed:
+    - "No content assertion (e.g. via slurp) — only file metadata asserted"
+    - "ansible_managed header not covered"
+    - "template backup and validate parameters not covered"
+    - "Unused distribution value left in group_vars/debian.yaml and rhel.yaml"
+  open_questions: —
+  notes:
+    - "Two runs reported as --diff runs had no diff blocks in the pasted output; a later run with --diff showed them"
+    - "The known_hosts lost update resolves the question left open in docker-local/inventory-hostkeys.md about concurrent writes"
+    - "Containers files-templates-node1 (os_family=debian) and files-templates-node2 (os_family=rhel) were recreated fresh once for the from-scratch run; IPs 172.17.0.3 and 172.17.0.4 were unchanged"

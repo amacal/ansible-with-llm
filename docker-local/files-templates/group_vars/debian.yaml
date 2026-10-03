@@ -1,0 +1,5 @@
+---
+ansible_python_interpreter: /usr/bin/python3.11
+distribution: Debian
+cron_package: cron
+cron_schedule: "30 2 * * 1"

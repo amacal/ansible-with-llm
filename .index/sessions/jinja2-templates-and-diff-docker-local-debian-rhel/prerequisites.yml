@@ -1,0 +1,4 @@
+- "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
+- "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
+- "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
+- "Host Key Checking for Recreated Containers (docker-local)"
