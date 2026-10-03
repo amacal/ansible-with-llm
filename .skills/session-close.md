@@ -15,6 +15,7 @@ Write the notes file, the `.history/` entry, and the `.index/` session directory
    - Concept defined in an earlier session's notes → cite that file by name, state only the reused fact, don't re-derive.
    - Target 600–1400 words. Shorter (thin retarget) or longer (multi-concept synthesis) → say so explicitly in Overview or Design rationale.
    - Worked example: non-trivial (exercises the interesting case), verifiable mentally in under a minute, the actual task list/variables/managed-node state traced fully in prose.
+   - Every recap figure and run outcome stated as observed (`ok=`/`changed=` counts, a handler firing, a failure) is taken from a run that actually happened this session, paired with the playbook version and node state that run really had — never assembled from two different runs. Anything only reasoned through in dialogue is written as reasoning ("a later run would…"), never as an observation.
 
 3. **Confirm idempotency before writing anything else (implementation sessions only).** The exercise's playbook must have been run twice this session with the second run reporting zero `changed` tasks (per CLAUDE.md's "Idempotency discipline") — if this didn't happen, the session isn't closeable as `completed`; stop here and report that back instead of writing a close.
 

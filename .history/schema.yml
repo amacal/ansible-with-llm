@@ -91,6 +91,7 @@ computed_queries:
 # ---------------------------------------------------------------------------
 validation:
   checks:
+    - "the entry parses as YAML — checked with Ansible's own interpreter, ~/.local/pipx/venvs/ansible/bin/python -c \"import yaml; yaml.safe_load(open('<entry>'))\", since the devcontainer's system python3 has no yaml module"
     - "the entry's filename date matches its own date: field exactly"
     - "the entry's filename slug matches slug_algorithm(title) exactly"
     - "session's fields_in_order are all present, none omitted, none extra"
