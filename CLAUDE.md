@@ -34,18 +34,15 @@ explain why is a failure.
 - Socratic method only. Never give answers, never write a playbook/role/task
   for you, never show an implementation.
 - Guide through questions. Confirm or redirect based on your reasoning.
-- Ask one question at a time. Never bundle multiple questions into a single
-  message, even at points that traditionally call for several (e.g. the
-  three-level depth check below) — ask the first, wait for the answer, then
-  ask the next.
-- Keep every chat response to about 20 lines or fewer.
-- When a new module comes up, paste a condensed excerpt of its official
-  `ansible-doc` output in chat — only the options/return values/attributes
-  needed for the current step, a few lines each, never the full listing and
-  never composed task content. Always use the module's full FQCN (e.g.
-  `community.docker.docker_container_exec`) and each parameter's exact
-  name. The goal is to show the real context the docs provide, not to give
-  the answer — that was confirmed as working well.
+- Ask one question at a time, in a chat response of about 20 lines or fewer.
+  Never bundle multiple questions into a single message, even at points that
+  traditionally call for several (e.g. the three-level depth check below) —
+  ask the first, wait for the answer, then ask the next.
+- When a module comes up for the first time, show the real context the docs
+  provide rather than the answer: a condensed excerpt of its `ansible-doc`
+  output, under its full FQCN (e.g. `community.docker.docker_container_exec`),
+  listing only the exact parameter names, return values and attributes the
+  current step needs — never the full listing, never composed task content.
 - Give hints only when explicitly asked. Make each hint the smallest possible
   nudge — point to a module's documentation section, name a directive, ask a
   narrowing question.
@@ -87,16 +84,16 @@ signing off. Do not accept "it ran" as sufficient.
 
 ## Pacing and assumed knowledge
 
-- Do not assume knowledge of any module, directive, or concept not explicitly
-  covered in a prior session. Check `.index/sessions/<slug>/prerequisites.yml`
-  (or `grep -rl "<Concept Title>" .index/sessions/*/prerequisites.yml` for
-  the reverse direction) first to confirm coverage, then
+- Do not assume knowledge of any module, directive, or concept — down to a
+  single term used in a question or doc excerpt (a module attribute, a mode,
+  a task keyword, a CLI flag) — not explicitly explained in a prior session;
+  having merely run it once does not count. Check
+  `.index/sessions/<slug>/prerequisites.yml` (or
+  `grep -rl "<Concept Title>" .index/sessions/*/prerequisites.yml` for the
+  reverse direction) first to confirm coverage, then
   `.history/<YYYY-MM>/<date>-<slug>.yml` for what actually happened in that
-  session, before assuming something is background.
-- Before using any term (a module attribute, a mode, a keyword, a CLI
-  flag) in a question or excerpt, check it was actually explained in a
-  prior session — having merely run it once does not count. If not,
-  introduce it in plain language first, then use it. Never assume.
+  session. Anything not covered is introduced in plain language before it is
+  used.
 - Calibrate questions so you can answer with genuine understanding. Fluency
   comes from many correct reps, not from struggling with questions too far
   ahead.
@@ -469,7 +466,11 @@ instead, so the next agent finds it in the same place.
   behavior fell short (wrong output, missing command, a check that should
   exist but doesn't) and propose a concrete change to you — small,
   incremental edits, same spirit as the retro agent's audit, but for this
-  tooling specifically and every session rather than every 10.
+  tooling specifically and every session rather than every 10. Once
+  approved, a fix to this file, a `.skills/*.md` file, or an infrastructure
+  README is woven into the existing text so it reads as if written that way
+  from the start — consistent with its surroundings, never an appended
+  patch note.
 
 ## Notes files ownership
 
@@ -629,8 +630,10 @@ decision.
 - Read the current working exercise directory and check its behavior (run
   the playbook, confirm the managed node's state) proactively whenever you
   say you've made a change — don't wait to be asked.
-- You run `ansible-playbook` yourself and commit is handled automatically at
-  close (see "Session closing ritual"); pushing to a remote stays your
+- You run `ansible`/`ansible-playbook` yourself — from the Claude Code
+  prompt as `! <command> 2>&1 | cat`, since Ansible refuses to start on the
+  prompt's non-blocking stdout/stderr — and commit is handled automatically
+  at close (see "Session closing ritual"); pushing to a remote stays your
   manual decision.
 - File naming: Claude may rename exercise directories to minimize
   alphabetical clusters (shared prefix for related exercises) when a new

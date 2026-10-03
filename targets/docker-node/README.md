@@ -11,9 +11,15 @@ own requirement on a managed node) + a passwordless-sudo `ansible` user for
 privilege-escalation exercises. Nothing else is pre-installed — every package
 an exercise needs, the exercise's own playbook installs.
 
-Neither image bakes in an SSH key at build time, so rebuilding is never
-needed just to rotate keys — a public key is mounted into the container at
-`docker run` time instead, read fresh every time the container starts.
+The two kinds of SSH key are handled differently. The login key is never
+baked in, so rebuilding is never needed just to rotate it — a public key is
+mounted into the container as the `ansible` user's `authorized_keys` at
+`docker run` time, read fresh every time the container starts. The host
+keys, by contrast, are generated once at build time (by the
+`openssh-server` package's install step on Debian, by `ssh-keygen -A` on
+RHEL), so every container started from the same image presents the same
+host key — recreating a container never changes it; only rebuilding the
+image does.
 
 This file and the two Dockerfiles are infrastructure Claude maintains, the
 same tier as `.devcontainer/` — not the learning material itself. Everything
@@ -67,10 +73,17 @@ instance of them.
 
 ```bash
 docker rm -f <exercise-dir>-node1 [<exercise-dir>-node2 ...]
-ssh-keygen -R <node-bridge-ip>   # drop the stale host key from ~/.ssh/known_hosts
+ssh-keygen -R <node-bridge-ip>   # forget the IP-to-host-key pairing in ~/.ssh/known_hosts
 ```
 
 Every node is ephemeral: destroyed at the end of the sitting that created it,
 regardless of whether the exercise concluded (the exercise's *files* persist;
 the running container never needs to). `.tmp/ansible_node_key*` is gitignored
 and regenerated per sitting like any other `.tmp/` scratch content.
+
+The `ssh-keygen -R` step matters because a bridge IP is reused by whatever
+container starts next, possibly one from the other image with a different
+host key; removing the entry turns that into an unknown key rather than a
+changed one. Either way the next connection needs trust established again —
+how an exercise does that (and whether it keeps its own known-hosts file
+instead of `~/.ssh/known_hosts`) is that exercise's own decision.
