@@ -19,15 +19,23 @@ explain why is a failure.
   exercise and destroyed after (see `targets/docker-node/README.md`). No
   credentials needed, available from day one — this is where most exercises
   happen. Directory: `docker-local/`.
-- **Hetzner Cloud (future)** — real cloud VMs via the `hetzner.hcloud`
-  collection. API token supplied by you per session when needed, never
-  stored in the repo or baked into the devcontainer image. Useful once
-  genuine network latency, cloud-init, or a dynamic inventory plugin against
-  real infrastructure is the point. Directory: `hetzner-cloud/`.
-- **AWS (future)** — real EC2 instances via the `amazon.aws` collection.
-  Credentials supplied per session the same way. Useful for the `aws_ec2`
-  dynamic inventory plugin, IAM-aware exercises, and anything specifically
-  about AWS's own automation surface. Directory: `aws/`.
+- **Vagrant VMs (local, libvirt/KVM)** — ephemeral, SSH-reachable
+  Debian-family and RHEL-family virtual machines (see
+  `targets/vagrant-local/README.md`), for exactly what a container can't
+  honestly simulate: reboot and `wait_for_connection`, a real init/boot
+  sequence, genuine kernel modules, real block devices. Needs a one-time
+  devcontainer rebuild with KVM passthrough, and only works on a host that
+  actually supports nested virtualization — unavailable otherwise, the same
+  as any other missing prerequisite. Directory: `vagrant-local/`.
+- **Hetzner Cloud / AWS (proposed when genuinely needed)** — real cloud
+  infrastructure via the `hetzner.hcloud`/`amazon.aws` collections. Neither
+  is held back waiting for you to offer credentials: whenever an exercise
+  genuinely needs real cloud infrastructure — a cloud-specific dynamic
+  inventory plugin, IAM-aware automation, genuine network latency/DNS,
+  anything docker-local/vagrant-local can't meaningfully test — the select
+  or plan agent proposes it and names exactly which credential is needed.
+  You supply it per session; it's never stored in the repo or baked into the
+  devcontainer image. Directories: `hetzner-cloud/`, `aws/`.
 
 ## Teaching style
 
@@ -129,13 +137,25 @@ first run looked fine.
 
 ## Cross-target comparison
 
-Having both a Debian-family and a RHEL-family container is a deliberate
-tool. The same role run against both forces precision about what Ansible's
-generic modules (`package`, `service`, `user`) actually abstract away versus
-what's genuinely host-specific (paths, package names, init conventions).
+Having both a Debian-family and a RHEL-family node is a deliberate tool,
+whether the node is a container or a VM. The same role run against both
+forces precision about what Ansible's generic modules (`package`, `service`,
+`user`) actually abstract away versus what's genuinely host-specific (paths,
+package names, init conventions).
+
+A second, independent axis: `docker-local` versus `vagrant-local` for the
+*same* role. A container and a VM are both "a Linux host Ansible can SSH
+into," but a container can fake that much and no more — a task that reboots
+the host and waits for it to come back, or genuinely depends on an init
+system owning PID 1, will pass against a container for the wrong reason (or
+silently not exercise the real mechanism at all) and only mean something
+against a real VM. Running the same exercise against both is how that gap
+gets found deliberately, in a session built for it, instead of in
+production.
+
 Once Hetzner/AWS are active, the same forcing function applies one level up:
-a local-container run versus a real cloud VM run of the same role separates
-what's fundamental to the role's logic from what's incidental to a
+a local run (container or VM) versus a real cloud instance of the same role
+separates what's fundamental to the role's logic from what's incidental to a
 particular target (network latency, real DNS, actual multi-tenancy
 concerns).
 
