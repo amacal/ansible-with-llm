@@ -1,0 +1,6 @@
+- "write-idempotent-package-task"
+- "escalate-privilege-per-task"
+- "map-package-names-per-family-with-group-vars"
+- "verify-installed-packages-with-package-facts"
+- "declare-module-dependencies-explicitly"
+- "diagnose-check-mode-module-dependency-failures"

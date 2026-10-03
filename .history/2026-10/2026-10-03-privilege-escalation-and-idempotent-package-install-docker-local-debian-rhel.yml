@@ -1,0 +1,54 @@
+date: "2026-10-03"
+title: "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
+session:
+  file: docker-local/packages-become/
+  status: completed
+  attempted:
+    - "Install tree (same name) and the cron daemon (cron on Debian, cronie on Rocky) on a Debian 12 and a Rocky 9 node with ansible.builtin.package and become, verified with package_facts and assert, idempotent on a second run and on freshly recreated containers"
+  explored:
+    - "What a state: present task does on a first vs second run and which status each reports"
+    - "rpm vs dnf and dpkg vs apt as database layer vs repository/dependency layer"
+    - "ansible.builtin.package use: auto delegation via ansible_pkg_mgr, and that package names are not translated per distribution"
+    - "Static inventory.ini vs dynamic inventory for this exercise; dynamic chosen"
+    - "become as a keyword (Play/Task/Block applicability), default become_method sudo and become_user root, passwordless sudoers entry in the images"
+    - "Task-level vs play-level become, including play-level escalation of the implicit Gathering Facts task"
+    - "Why check mode refuses to bootstrap python3-apt"
+    - "Per-family package names in group_vars vs deciding inside the playbook"
+    - "package_facts return structure under ansible_facts, and its merge into host facts"
+    - "is defined on an expression whose intermediate key is undefined, and the false-pass risk of is not defined on a mistyped path"
+    - "Why package_facts reads the package database without become"
+    - "Declaring the package-query bindings per family (python3-apt / python3-rpm) through group_vars"
+  tried:
+    - "Ad-hoc ping before any host-key seeding existed for the new containers"
+    - "Install tree via package with no become"
+    - "Install task placed inside the host-key seeding play in site.yml, then moved to its own play in packages.yml"
+    - "packages.yml with task-level become run with --check --diff, then for real"
+    - "cron_package variable in group_vars/debian.yaml and rhel.yaml used by a package task"
+    - "Assert on package_facts_result.packages[cron_package] is defined"
+    - "Assert extended to tree with the corrected ansible_facts.packages path"
+    - "package_mngmt bindings task added first, with package_facts placed before the install tasks"
+    - "package_facts moved after the install tasks"
+  corrections:
+    - "Predicted --check --diff with become would report changed on both nodes; observed changed on node2 and FAILED on node1 with \"python3-apt must be installed to use check mode\""
+    - "Predicted changed=3 on both nodes for the fresh run with the bindings task; observed changed=2 on both: node2 already had python3-rpm, and on node1 the apt module bootstrapped python3-apt before evaluating state, so the bindings task reported ok"
+  bugs_found:
+    - "Ad-hoc ping UNREACHABLE (Host key verification failed) because the per-exercise known_hosts file had not been seeded; resolved with a seeding play in site.yml"
+    - "Install task initially appended to the gather_facts: false host-key play; moved to its own play in packages.yml"
+    - "Assert read package_facts_result.packages[...], one level too shallow, and evaluated false on both nodes; corrected to package_facts_result.ansible_facts.packages"
+    - "Assert initially verified only the cron package; extended to tree"
+    - "Assert task name referred only to cron after it also checked tree; renamed"
+    - "package_facts placed before the install tasks captured a pre-install snapshot and the assert failed on a fresh run; resolved by moving package_facts after the installs"
+  completed:
+    - "Wrote docker-local/packages-become/ with ansible.cfg, docker.yml, group_vars/all.yaml, debian.yaml, rhel.yaml, site.yml and packages.yml"
+    - "Observed FAILED on both nodes without become: node1 at apt-get update permission denied during python3-apt bootstrap, node2 with dnf's root-user message"
+    - "First real become run: changed on both; node1 additionally had python3-apt installed and apt lists populated while the diff named only tree"
+    - "cron on Debian installed 16 packages including exim4; cronie on Rocky installed alone"
+    - "Final packages.yml on freshly recreated containers: changed=2 per host with all assertions passed, second run changed=0"
+    - "site.yml known_hosts task reported ok on recreated containers"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed: —
+  open_questions: —
+  notes:
+    - "Containers were recreated with --label os_family=debian/rhel to support the dynamic inventory"
+    - "The host-key seeding play in site.yml follows the pattern from docker-local/inventory-dynamic/site.yml"
+    - "Containers were recreated fresh three times to rerun from an empty package state"

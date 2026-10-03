@@ -1,0 +1,6 @@
+title: "Packages and System State"
+sessions:
+  - "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
+frontier:
+  - "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
+explicit_future_targets: —

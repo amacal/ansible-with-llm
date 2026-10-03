@@ -1,0 +1,5 @@
+---
+ansible_python_interpreter: /usr/bin/python3.9
+distribution: Rocky
+cron_package: cronie
+package_mngmt: python3-rpm

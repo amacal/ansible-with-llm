@@ -1,0 +1,5 @@
+---
+ansible_python_interpreter: /usr/bin/python3.11
+distribution: Debian
+cron_package: cron
+package_mngmt: python3-apt

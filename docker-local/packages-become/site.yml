@@ -1,0 +1,20 @@
+---
+- name: Prepare Docker
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Collect Public Host Keys
+      delegate_to: localhost
+      register: host_key_result
+      changed_when: false
+      check_mode: false
+      community.docker.docker_container_exec:
+        container: "{{ inventory_hostname }}"
+        command: "cat /etc/ssh/ssh_host_ecdsa_key.pub"
+
+    - name: Write Public Host Keys to File
+      delegate_to: localhost
+      ansible.builtin.known_hosts:
+        path: /workspaces/ansible-with-llm/docker-local/packages-become/known_hosts
+        name: "{{ ansible_ssh_host }}"
+        key: "{{ ansible_ssh_host }} {{ host_key_result.stdout }}"

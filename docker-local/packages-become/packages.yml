@@ -1,0 +1,31 @@
+---
+- name: Install packages
+  hosts: all
+  tasks:
+    - name: Install package management dependency
+      become: true
+      ansible.builtin.package:
+        name: "{{ package_mngmt }}"
+        state: present
+
+    - name: Install tree package
+      become: true
+      ansible.builtin.package:
+        name: tree
+        state: present
+
+    - name: Install cron package
+      become: true
+      ansible.builtin.package:
+        name: "{{ cron_package }}"
+        state: present
+
+    - name: Fetch package facts
+      ansible.builtin.package_facts:
+      register: package_facts_result
+
+    - name: Check if packages are installed
+      ansible.builtin.assert:
+        that:
+          - package_facts_result.ansible_facts.packages[cron_package] is defined
+          - package_facts_result.ansible_facts.packages['tree'] is defined

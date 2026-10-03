@@ -1,0 +1,1 @@
+Installed tree and a per-family cron package (cron/cronie) on Debian 12 and Rocky 9 nodes via ansible.builtin.package with task-level become, declared the package-query bindings per family in group_vars, verified with package_facts and assert, and confirmed changed=2 then changed=0 on freshly recreated containers
