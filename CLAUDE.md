@@ -43,6 +43,8 @@ explain why is a failure.
   output, under its full FQCN (e.g. `community.docker.docker_container_exec`),
   listing only the exact parameter names, return values and attributes the
   current step needs — never the full listing, never composed task content.
+  The excerpt is trimmed from real `ansible-doc` output, run in that moment,
+  never reworded inside the quote; any explanation goes outside it.
 - Give hints only when explicitly asked. Make each hint the smallest possible
   nudge — point to a module's documentation section, name a directive, ask a
   narrowing question.

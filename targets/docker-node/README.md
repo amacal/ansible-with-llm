@@ -39,7 +39,16 @@ fails with `Permission denied (publickey)`. The mount must use the host-side
 path of the workspace, looked up from the devcontainer's own mounts. Second,
 `-p 0:22` publishes on the host's interfaces, not the devcontainer's
 `127.0.0.1`, so the node is reached directly on its bridge IP at port 22
-(the devcontainer and the node share Docker's default bridge network).
+(the devcontainer and the node share Docker's default bridge network). The
+published port is therefore unused by any connection from here, but it is
+kept deliberately: it is what Docker reports as the node's SSH endpoint, so
+anything that reads the daemon's port mapping (such as the
+`community.docker.docker_containers` inventory plugin in `ssh` mode) sees a
+`127.0.0.1`-plus-host-port address that is unreachable from the
+devcontainer — a real Docker-outside-of-Docker pitfall worth meeting. An
+exercise that groups nodes by metadata can also add `--label key=value` to
+`docker run` (e.g. `--label os_family=debian`); labels show up under
+`.Config.Labels` in `docker inspect`.
 
 ```bash
 # once per sitting, if not already generated:
