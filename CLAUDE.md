@@ -35,7 +35,7 @@ explain why is a failure.
   anything docker-local/vagrant-local can't meaningfully test — the select
   or plan agent proposes it and names exactly which credential is needed.
   You supply it per session; it's never stored in the repo or baked into the
-  devcontainer image. Directories: `hetzner-cloud/`, `aws/`.
+  devcontainer image. Directories: `hetzner-cloud/`, `aws-cloud/`.
 
 ## Teaching style
 

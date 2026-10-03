@@ -62,6 +62,6 @@ Write the notes file, the `.history/` entry, and the `.index/` session directory
     - Every title in `unlocks.yml`/`future_targets.yml` resolves to either a session or a `.index/future-targets/*.yml` title.
     - No title exists as both a `.index/sessions/*/meta.yml` title and a `.index/future-targets/*.yml` title.
     - Every tag in `concepts.yml`/`capabilities.yml` matches `^[a-z0-9]+(-[a-z0-9]+)*$`.
-    - `meta.yml`'s `target` field is one of `docker-local | vagrant-local | hetzner-cloud | aws`.
+    - `meta.yml`'s `target` field is one of `docker-local | vagrant-local | hetzner-cloud | aws-cloud`.
 
 12. **Report back** every file you wrote/edited/removed, verbatim, with full paths (the new `.history/` entry path, the `.index/sessions/<slug>/` directory and its 10 files, any future-target/branch files touched, any retrospective edit and its stated reason) — the calling conversation passes this into the verify agent's prompt so it can check the actual files directly instead of re-deriving "what changed" by globbing the whole tree.
