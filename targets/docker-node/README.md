@@ -71,6 +71,23 @@ docker exec <exercise-dir>-node1 ls -l /home/ansible/.ssh/
 docker inspect -f '{{.NetworkSettings.IPAddress}}' <exercise-dir>-node1
 ```
 
+A node that has already been through a few runs no longer shows what a
+first run does, because everything the playbook installs is already there.
+So an exercise's from-scratch claim (it converges a fresh node, then a
+second run reports zero changed) is checked against a recreated container
+rather than a reused one. Recreating means removing the container and running
+it again with the same name and the same `--label` flags, so dynamic-inventory
+grouping stays the same. The host key stays the same as well, since it comes
+from the image. The bridge IP usually comes back unchanged, but nothing
+guarantees it:
+
+```bash
+docker rm -f <exercise-dir>-node1
+docker run -d --name <exercise-dir>-node1 --label os_family=debian \
+  -v "$HOST_WS/.tmp/ansible_node_key.pub:/home/ansible/.ssh/authorized_keys:ro" \
+  -p 0:22 ansible-node-debian
+```
+
 The bridge IP, the key path, and every other connection detail belong in
 that exercise's own `inventory.ini` and `ansible.cfg` — never here. The IP is
 ephemeral (valid only for that container's lifetime), so an exercise's
