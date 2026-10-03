@@ -1,0 +1,1 @@
+Replaced the static inventory with the community.docker.docker_containers plugin in ssh mode, using an allow-list filter on an os_family label, composed ansible_ssh_host/ansible_ssh_port, exact debian/rhel groups feeding group_vars, host-key seeding and fact asserts, verified by changed=0 on repeat runs and a swapped-recreation run needing no edits

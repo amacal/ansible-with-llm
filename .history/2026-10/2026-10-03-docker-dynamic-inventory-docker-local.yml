@@ -1,0 +1,66 @@
+date: "2026-10-03"
+title: "Docker Dynamic Inventory (docker-local)"
+session:
+  file: docker-local/inventory-dynamic/
+  status: completed
+  attempted:
+    - "Replace the static inventory with the community.docker.docker_containers inventory plugin, connecting over SSH, with label-based debian/rhel groups, host-key seeding, fact asserts, an idempotent second run and a swapped-recreation test"
+  explored:
+    - "Declared host list vs names and addresses both queried from the daemon, using a node1-removed/node3-added scenario"
+    - "Filtering vs grouping, and why a play with hosts: all on an unfiltered config would reach every container on the shared daemon (38 containers)"
+    - "Filter semantics: first match wins, no match means included; include-only list vs allow-list ending in exclude: True"
+    - "Plugin config filename rule (*.docker.yml) and the auto, yaml and ini parsers each declining a misnamed file"
+    - "Host vars set by connection_type docker-api (ansible_connection community.docker.docker_api, ansible_host = container name) vs ssh (ansible_ssh_host 127.0.0.1, ansible_ssh_port = host-published port)"
+    - "ssh connection plugin host/port vars list order and why compose must target ansible_ssh_host/ansible_ssh_port"
+    - "verbose_output as a discovery tool for docker_* inspect paths"
+    - "strict: false vs strict: True, and the tradeoff between a silently wrong host and an empty inventory"
+    - "keyed_groups name generation and sanitisation vs groups with exact names; image name vs container label as the grouping source"
+    - "Jinja2 string methods, tests (is defined) and filters as sources of usable functions in plugin expressions"
+    - "group_vars lookup next to the inventory source for plugin-created groups"
+    - "setup gather_subset: the min baseline, !all/!min, and assert behavior when a fact key is absent"
+  tried:
+    - "ansible.cfg with inventory = inventory.ini while the config file was inventory.yml"
+    - "Plugin config named inventory.yml"
+    - "Filter include: container_name.starts_with('inventory-dynamic-')"
+    - "Filter include: inventory_hostname.starts_with('inventory-dynamic-')"
+    - "Default connection_type (docker-api), then connection_type: ssh without compose"
+    - "compose with ansible_ssh_port: 22 as a bare integer"
+    - "Option written as struct: True"
+    - "strict: True with the bare integer port"
+    - "keyed_groups with key docker_config.Image and prefix image"
+    - "groups on docker_config.Labels.os_family with an unlabelled node3 running"
+    - "Filter exclude: docker_config.Labels.os_family not in ['debian', 'rhel'] as the first entry"
+    - "gather_subset with distribution only, then with \"!all,!min\" as one list item, then with separate !all and !min items plus python"
+  corrections:
+    - "Described the misnamed inventory.yml run as failed; observed four warnings, empty all/ungrouped and exit 0, matching the earlier prediction"
+    - "Predicted the two prefixed nodes after renaming to docker.yml; observed an empty inventory because starts_with is not a str method; corrected to startswith"
+    - "Predicted ansible-inventory --host would show ansible_ssh_port 22 after compose; observed 32779 because the bare integer compose value was skipped under strict: false; corrected by quoting it as \"22\""
+    - "Expected strict: True to take effect; observed no change because the key was spelled struct and was ignored without a warning"
+    - "Predicted keyed group names image_ansible-node-debian and image_ansible-node-rhel; observed image_ansible_node_debian and image_ansible_node_rhel"
+    - "Predicted the exclude on os_family not in ['debian', 'rhel'] would drop node3 and keep node1/node2; observed an empty inventory with a warning, because the attribute lookup on node3's empty Labels errored before not in; corrected by an is not defined exclude placed first"
+    - "Assumed \"!all,!min\" as a single gather_subset item excluded the min subset; a fact-key listing showed date_time, dns and env still collected; corrected by splitting it into separate items"
+  bugs_found:
+    - "ansible.cfg pointed at nonexistent inventory.ini; resolved by pointing at the config file"
+    - "Plugin config named inventory.yml was not recognised by the plugin; resolved by renaming to docker.yml"
+    - "Filter used undefined container_name and nonexistent starts_with method; resolved with inventory_hostname.startswith"
+    - "compose ansible_ssh_port: 22 (integer) silently skipped; resolved with the string \"22\""
+    - "Option misspelled as struct; resolved as strict: True"
+    - "Unlabelled container under strict: True emptied the whole inventory; resolved with exclude filters on missing or unexpected os_family placed before the include"
+    - "Interpreter assert initially missing from site.yml; added"
+    - "gather_subset item \"!all,!min\" not split, so min was still collected; resolved with separate !all and !min items plus an explicit python subset"
+  completed:
+    - "Wrote docker-local/inventory-dynamic/ with ansible.cfg, docker.yml, group_vars/all.yaml, debian.yaml, rhel.yaml and site.yml"
+    - "ansible-inventory --graph listed only inventory-dynamic-node1 in debian and inventory-dynamic-node2 in rhel, with unlabelled inventory-dynamic-node3 running and excluded"
+    - "ansible-inventory --host showed ansible_ssh_host as each node's bridge IP and ansible_ssh_port 22"
+    - "Reproduced UNREACHABLE (ssh_askpass, Host key verification failed) before host-key seeding"
+    - "First playbook run ok=4 changed=1 per node, then changed=0; after adding the interpreter assert ok=5 changed=0 on consecutive runs"
+    - "Containers recreated in swapped order (node2 172.17.0.3, node1 172.17.0.4): with no exercise file edited, the next run reported changed=1 per node with both known_hosts lines rewritten, then changed=0"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed: —
+  open_questions: —
+  notes:
+    - "The seeding play is adapted closely from docker-local/inventory-hostkeys/site.yml, with inventory_hostname as the container and ansible_ssh_host as the known_hosts name"
+    - "Containers were recreated with --label os_family=debian/rhel; the docker-node README run command has no labels"
+    - "The README's -p 0:22 publishing produced the plugin's 127.0.0.1 plus host-port values in ssh mode"
+    - "With verbose_output: true, docker_name showed a leading slash (/inventory-dynamic-node1); without it, no slash"
+    - "verbose_output was used temporarily and removed from the final docker.yml"

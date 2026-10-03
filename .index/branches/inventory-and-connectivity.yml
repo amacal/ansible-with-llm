@@ -3,8 +3,8 @@ sessions:
   - "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
   - "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
   - "Host Key Checking for Recreated Containers (docker-local)"
-frontier:
-  - "Host Key Checking for Recreated Containers (docker-local)"
-explicit_future_targets:
   - "Docker Dynamic Inventory (docker-local)"
+frontier:
+  - "Docker Dynamic Inventory (docker-local)"
+explicit_future_targets:
   - "Child Group Nesting by OS Version (docker-local, rhel)"

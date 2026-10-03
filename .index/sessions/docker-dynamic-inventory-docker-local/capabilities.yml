@@ -1,0 +1,8 @@
+- "configure-docker-inventory-plugin"
+- "filter-dynamic-inventory-allow-list"
+- "compose-connection-vars-from-inspect-data"
+- "build-exact-groups-from-container-labels"
+- "diagnose-silent-inventory-plugin-failures"
+- "discover-plugin-variables-with-verbose-output"
+- "limit-fact-gathering-subsets"
+- "seed-known-hosts-from-dynamic-inventory"
