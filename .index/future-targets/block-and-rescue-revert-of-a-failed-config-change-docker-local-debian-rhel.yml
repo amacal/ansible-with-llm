@@ -1,0 +1,6 @@
+title: "Block and Rescue Revert of a Failed Config Change (docker-local, debian+rhel)"
+status: not-completed
+mentioned_by:
+  - "Handlers and Notify (docker-local, debian+rhel)"
+evidence:
+  - ".history/2026-10/2026-10-03-handlers-and-notify-docker-local-debian-rhel.yml: not_completed (no automatic revert of the drop-in after a failed merged check; block/rescue named as a later topic)"

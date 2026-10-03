@@ -2,6 +2,8 @@ title: "Packages and System State"
 sessions:
   - "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
   - "Jinja2 Templates and --diff (docker-local, debian+rhel)"
+  - "Handlers and Notify (docker-local, debian+rhel)"
 frontier:
-  - "Jinja2 Templates and --diff (docker-local, debian+rhel)"
-explicit_future_targets: —
+  - "Handlers and Notify (docker-local, debian+rhel)"
+explicit_future_targets:
+  - "Block and Rescue Revert of a Failed Config Change (docker-local, debian+rhel)"
