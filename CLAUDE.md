@@ -23,10 +23,12 @@ explain why is a failure.
   Debian-family and RHEL-family virtual machines (see
   `targets/vagrant-local/README.md`), for exactly what a container can't
   honestly simulate: reboot and `wait_for_connection`, a real init/boot
-  sequence, genuine kernel modules, real block devices. Needs a one-time
-  devcontainer rebuild with KVM passthrough, and only works on a host that
-  actually supports nested virtualization — unavailable otherwise, the same
-  as any other missing prerequisite. Directory: `vagrant-local/`.
+  sequence, genuine kernel modules, real block devices. KVM passthrough is
+  already committed in `.devcontainer/devcontainer.json`, confirmed working
+  on this host — available from day one here, but only portable to a host
+  that actually supports nested virtualization (see the README for the
+  fallback if this repo is ever opened somewhere else). Directory:
+  `vagrant-local/`.
 - **Incus system containers (local, remote client to a host-side Incus)** —
   ephemeral, real systemd-as-PID-1 containers (see
   `targets/lxd-local/README.md`), sitting between `docker-local` and

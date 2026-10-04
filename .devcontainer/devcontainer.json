@@ -7,6 +7,7 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
+  "runArgs": ["--device=/dev/kvm", "--cap-add=NET_ADMIN"],
   "customizations": {
     "vscode": {
       "extensions": [

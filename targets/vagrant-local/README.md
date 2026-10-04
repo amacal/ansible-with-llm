@@ -13,24 +13,18 @@ as `.devcontainer/` — not the learning material itself. Everything inside a
 scratch, guided Socratically, same as `docker-local` (see CLAUDE.md's "Hard
 constraints").
 
-## Before the first use: enable KVM passthrough
+## KVM passthrough
 
-This needs actual nested virtualization, which the default devcontainer
-doesn't request (requesting it unconditionally would break container startup
-on a host that can't provide it). One-time setup, only on a host that
-actually supports it (bare-metal Linux with virtualization enabled in BIOS —
-not guaranteed inside a cloud-hosted devcontainer backend or Docker Desktop's
-own VM on macOS/Windows without nested-virt explicitly enabled there):
-
-1. Confirm the host has it: `ls /dev/kvm` should exist before you start.
-2. Add to `.devcontainer/devcontainer.json`'s top level:
-   ```json
-   "runArgs": ["--device=/dev/kvm", "--cap-add=NET_ADMIN"]
-   ```
-3. **Dev Containers: Rebuild Container.**
-
-If `/dev/kvm` isn't available on the host at all, this target isn't usable
-there — fall back to `docker-local`, which has no such requirement.
+This needs actual nested virtualization. `.devcontainer/devcontainer.json`
+already requests it (`runArgs: ["--device=/dev/kvm", "--cap-add=NET_ADMIN"]`)
+— confirmed working on the host this repo was set up on (`ls /dev/kvm`
+exists, VT-x present). That's a deliberate tradeoff, committed rather than
+left as a manual opt-in step: it makes `vagrant-local` work out of the box
+here, at the cost of portability — if this repo is ever opened on a host
+without `/dev/kvm` (a cloud-hosted devcontainer backend, Docker Desktop on
+macOS/Windows without nested-virt enabled), the container will fail to
+start until that `runArgs` line is removed again. If that happens, drop the
+`runArgs` line, rebuild, and fall back to `docker-local` on that host.
 
 ## Start libvirtd (once per container boot)
 
