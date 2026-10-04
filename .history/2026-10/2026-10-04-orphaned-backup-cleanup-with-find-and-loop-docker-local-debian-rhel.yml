@@ -1,0 +1,60 @@
+date: "2026-10-04"
+title: "Orphaned Backup Cleanup with find and loop (docker-local, debian+rhel)"
+session:
+  file: docker-local/handlers-cleanup/
+  status: completed
+  attempted:
+    - "Delete accumulated and validate-failure orphan 10_banner.conf.*~ backups in /etc/ssh/sshd_config.d/ on a Debian 12 and a Rocky 9 node using ansible.builtin.find and a looped ansible.builtin.file state=absent, with an independent find+assert verification and zero changed on a second run"
+  explored:
+    - "Recap of why a validate failure leaves a backup the play cannot name (backup written before validate; PID and timestamp from the node; no backup_file in the failed result)"
+    - "ansible.builtin.find parameters paths, patterns, use_regex, return values files, matched, skipped_paths and check_mode support (ansible-doc excerpt)"
+    - "Glob precision: 10_banner.conf.* vs 10_banner.conf.*~ against 10_banner.conf.dpkg-old and 10_banner.conf.rpmnew"
+    - "Real backups produced by the play (option A) vs touch-seeded files (option B); option A chosen"
+    - "Risk of dropping the merged sshd -t check and restart handler (container dying on restart with a merged-config-breaking drop-in)"
+    - "The single condition for a template backup: destination exists and rendered content differs, independent of validate"
+    - "Timestamp in the template vs a group variable as the varying input"
+    - "loop keyword, item, item.path on a list of dicts, loop_control label (generic debug example and official find/file ansible-doc examples)"
+    - "find without become on a 0700 directory: skipped_paths populated, matched 0, no failure; assert on files length alone passing falsely"
+    - "Empty loop reported as skipping rather than ok"
+    - "always section (official Blocks docs example) running after a rescue that ends in fail; tasks after the block not running for the failed host"
+    - "Retention policy: delete all on every run vs keep newest N or by age; rollback evidence in git history of group_vars and --diff output"
+    - "Why find + looped file over shell rm -f with changed_when: false"
+  tried:
+    - "Exercise directory initially populated as a copy of handlers-rescue/ with only the handlers-rescue prefix replaced"
+    - "ssh_banner group variable with a space (Debian Banner / Rocky Banner) while search_regex still used inventory_hostname"
+    - "search_regex changed to ssh_banner; values Debian2/Rocky2, an unbalanced-quote value, then Debian/Rocky"
+    - "Cleanup in always: with find (no become) and looped file (no become), never run"
+    - "Delete with become, finds without become, post-block find + assert on files length"
+    - "skipped_paths guard assert added and finds deliberately left without become to observe the Rocky failure"
+    - "become on both finds, loop_control label, final assert extended to skipped_paths length"
+    - "Valid change to Debian1/Rocky1, then invalid Debian\"/Rocky\" twice, then restore to Debian/Rocky"
+  corrections:
+    - "Stated a validate failure leaves nothing in a backup; corrected against the handlers-rescue observation that a new ~ file appeared on validate failure, i.e. the backup is written before validate"
+    - "Proposed glob 10_banner.conf.*; shown to match dpkg-old/rpmnew leftovers, narrowed to 10_banner.conf.*~"
+    - "Proposed a timestamp in the template to force backups; traced that every run would then report changed and leave a backup, replaced by a group variable"
+    - "Predicted Render would fail validate because of the space in VersionAddendum Debian Banner; observed Render, Verify and the restart changed and the failure was Ensure Banner is Applied timing out on the stale inventory_hostname search_regex"
+    - "Predicted the looped delete task would report ok on the second run; observed skipping with skipped=1"
+    - "Described a validate-failure run as needing a revert; restated as nothing to revert because the destination is untouched, only the orphan is cleaned"
+  bugs_found:
+    - "Ensure Banner is Applied still searched for inventory_hostname after the template switched to ssh_banner; both nodes timed out after 31 s (ok=5 changed=3 failed=1); search_regex changed to ssh_banner"
+    - "find without become on Rocky's 0700 sshd_config.d returned no files and a skipped path without failing; caught by the skipped_paths guard (node2 ok=5 failed=1); become added to both finds"
+    - "Final assert checked only skipped_paths is defined, always true; length check added"
+  completed:
+    - "Wrote docker-local/handlers-cleanup/ (ansible.cfg, docker.yml, group_vars/all.yaml, debian.yaml, rhel.yaml, known_hosts, site.yml, templates/banner.j2) with the cleanup in always: and a post-block find + assert"
+    - "ansible-inventory --graph matched the prediction: debian contains node1, rhel contains node2"
+    - "Produced three backups per node including one validate-failure orphan each (node1 .68/.55/.101, node2 .165/.153/.308), matching the predicted count"
+    - "Guard run without become on finds: node1 deleted 3 backups ok=10 changed=1; node2 failed at the guard ok=5 changed=0 failed=1; rerun node1 ok=9 changed=0 skipped=1"
+    - "With become on finds: node2 deleted 3 backups ok=10 changed=1, node1 ok=9 changed=0 skipped=1; immediate second run ok=9 changed=0 skipped=1 on both"
+    - "Valid change Debian1/Rocky1: ok=11 changed=4 on both with the new backup deleted the same run; rerun ok=9 changed=0 skipped=1 on both"
+    - "Invalid-quotes value: ok=5 changed=1 failed=1 skipped=2 rescued=1 on both, orphan deleted by always: the same run, post-block tasks not run, matching the prediction; repeated run identical"
+    - "Final converge to Debian/Rocky: ok=11 changed=4 on both, nodes left with no backups"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed:
+    - "The immediate second run after the final Debian/Rocky converge was not captured; zero-changed evidence is the earlier second runs with the same site.yml"
+  open_questions: —
+  notes:
+    - "CLAUDE.md Exercise files, Hard constraints and the reuses_code note, targets/docker-node/README.md, .skills/session-plan.md and .skills/session-verify.md were amended at the user's request to allow carrying over files from the user's own earlier exercises"
+    - "Scaffolding, block/rescue, Verify, Restart Container handler and wait_for carried over from handlers-rescue/; cleanup tasks written in this session"
+    - "Mid-session the user asked for larger steps with fewer, broader questions; later steps were given as multi-part tasks"
+    - "Containers handlers-cleanup-node1 (os_family=debian, 172.17.0.3) and handlers-cleanup-node2 (os_family=rhel, 172.17.0.4)"
+    - "Redundant when: backup_files.files is defined guards kept on the delete task and the final assert"

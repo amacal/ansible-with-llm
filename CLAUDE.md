@@ -250,10 +250,15 @@ not lost inside a single title.
 - Managed-node containers for that exercise are named `{dir}-node1`,
   `{dir}-node2`, ...
 - Every file inside an exercise directory — the playbook, every role, every
-  template, the inventory, the `ansible.cfg` — is written by you, from
-  scratch, Socratically guided. Claude never writes, completes, or suggests
-  concrete content for any of them (see "Hard constraints"). Creating the
-  empty directory itself is Claude's job, not content.
+  template, the inventory, the `ansible.cfg` — is written by you,
+  Socratically guided: either fresh, or copied from one of your own earlier
+  exercises and adapted. Each exercise still gets its own new directory with
+  its own scaffolding, but scaffolding and tasks you already wrote and
+  understood in a prior session may be carried over rather than retyped; the
+  concept new to this session is what gets written fresh. Claude never
+  writes, completes, or suggests concrete content for any of them (see "Hard
+  constraints"). Creating the empty directory itself is Claude's job, not
+  content.
 - Each exercise has a companion notes file at `{target-dir}/{dir}.md` (a
   sibling of the exercise directory, same basename) — Claude-owned (see
   "Notes files ownership"). A review session (see "Theory review") has
@@ -449,9 +454,11 @@ human/agent needs to know when writing or reading it.
     gained.
   - There is no `reuses_code` file for an exercise that reused a prior
     role verbatim without modification — that's `derived_from`, not a
-    separate field; genuine from-scratch reimplementation per "Hard
-    constraints" means verbatim reuse should be rare and, when it happens,
-    is itself worth a `notes` mention in `.history/`.
+    separate field. Carrying over your own scaffolding (`ansible.cfg`,
+    inventory, `group_vars`, host-key seeding) from an earlier exercise is
+    routine (see "Exercise files") and needs no mention; carrying over a
+    prior exercise's tasks or role unchanged as part of the new exercise's
+    subject is worth a `notes` mention in `.history/`.
 - Global structure beyond `sessions/` — `.index/branches/<slug>.yml` (real
   clusters, not a forced taxonomy, each with a `frontier` of
   completed-but-not-yet-extended sessions), `.index/open-gaps/<category>/
@@ -722,7 +729,8 @@ decision.
 ## Hard constraints (no exceptions)
 
 - No pre-built Galaxy role that accomplishes an exercise's own task —
-  write every task and role from scratch. Officially bundled
+  write every task and role yourself (copying from your own earlier
+  exercises counts, per "Exercise files"). Officially bundled
   `ansible.builtin` modules and platform-specific collection modules
   (`community.docker`, `ansible.posix`, `community.general`, and eventually
   `amazon.aws`/`hetzner.hcloud`) are the primitives this repo is built

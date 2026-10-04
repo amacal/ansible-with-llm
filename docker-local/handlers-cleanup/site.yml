@@ -1,0 +1,125 @@
+---
+- name: Prepare Docker
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Collect Public Host Keys
+      delegate_to: localhost
+      register: host_key_result
+      changed_when: false
+      check_mode: false
+      community.docker.docker_container_exec:
+        container: "{{ inventory_hostname }}"
+        command: "cat /etc/ssh/ssh_host_ecdsa_key.pub"
+
+    - name: Write Public Host Keys to File
+      delegate_to: localhost
+      check_mode: false
+      throttle: 1
+      ansible.builtin.known_hosts:
+        path: /workspaces/ansible-with-llm/docker-local/handlers-cleanup/known_hosts
+        name: "{{ ansible_ssh_host }}"
+        key: "{{ ansible_ssh_host }} {{ host_key_result.stdout }}"
+
+    - name: SSH Configuration
+      block:
+        - name: Render SSH Banner
+          become: true
+          register: ssh_banner_result
+          ansible.builtin.template:
+            validate: /usr/sbin/sshd -t -f %s
+            src: templates/banner.j2
+            dest: /etc/ssh/sshd_config.d/10_banner.conf
+            mode: '0644'
+            owner: root
+            group: root
+            backup: true
+
+        - name: Verify SSH Configuration
+          become: true
+          changed_when: ssh_banner_result is changed
+          notify: Restart Container
+          ansible.builtin.command:
+            cmd: /usr/sbin/sshd -t
+
+      rescue:
+        - name: Remove SSH Banner
+          become: true
+          when: ssh_banner_result is changed and ssh_banner_result.backup_file is not defined
+          ansible.builtin.file:
+            path: /etc/ssh/sshd_config.d/10_banner.conf
+            state: absent
+
+        - name: Revert SSH Banner
+          become: true
+          when: ssh_banner_result is changed and ssh_banner_result.backup_file is defined
+          ansible.builtin.copy:
+            src: "{{ ssh_banner_result.backup_file }}"
+            dest: /etc/ssh/sshd_config.d/10_banner.conf
+            remote_src: true
+            mode: '0644'
+            owner: root
+            group: root
+
+        - name: Explain SSH Banner Failure
+          ansible.builtin.fail:
+            msg: "{{ ansible_failed_result.stderr }}"
+
+      always:
+        - name: Find SSH Backup Files
+          become: true
+          register: backup_files
+          ansible.builtin.find:
+            paths: /etc/ssh/sshd_config.d/
+            patterns: "10_banner.conf.*~"
+
+        - name: Assert SSH Backup Files Listed
+          ansible.builtin.assert:
+            that:
+              - backup_files.skipped_paths is defined
+              - backup_files.skipped_paths | length == 0
+
+        - name: Delete SSH Backup Files
+          become: true
+          loop: "{{ backup_files.files }}"
+          when: backup_files.files is defined
+          loop_control:
+            label: "{{ item.path }}"
+          ansible.builtin.file:
+            path: "{{ item.path }}"
+            state: absent
+
+    - name: Find SSH Backup Files
+      become: true
+      register: backup_files
+      ansible.builtin.find:
+        paths: /etc/ssh/sshd_config.d/
+        patterns: "10_banner.conf.*~"
+
+    - name: Assert no SSH Backup Files
+      when: backup_files.files is defined
+      ansible.builtin.assert:
+        that:
+          - backup_files.files | length == 0
+          - backup_files.skipped_paths is defined
+          - backup_files.skipped_paths | length == 0
+
+    - name: Run pending handlers
+      ansible.builtin.meta:
+        flush_handlers
+
+    - name: Ensure Banner is Applied
+      delegate_to: localhost
+      ansible.builtin.wait_for:
+        host: "{{ ansible_ssh_host }}"
+        port: "{{ ansible_ssh_port }}"
+        search_regex: "{{ ssh_banner }}"
+        timeout: 30
+
+  handlers:
+    - name: Restart Container
+      delegate_to: localhost
+      community.docker.docker_container:
+        name: "{{ inventory_hostname }}"
+        restart: true
+        state: started

@@ -24,10 +24,10 @@ image does.
 This file and the two Dockerfiles are infrastructure Claude maintains, the
 same tier as `.devcontainer/` — not the learning material itself. Everything
 inside a `docker-local/<slug>/` exercise directory (the playbook, roles,
-`inventory.ini`, that exercise's own `ansible.cfg`) is written by you, from
-scratch, guided Socratically — same as every `.rs`/`.c` file in
-math-with-llm/hard-with-llm. Claude never writes or completes any of it (see
-CLAUDE.md's "Hard constraints").
+`inventory.ini`, that exercise's own `ansible.cfg`) is written by you,
+guided Socratically — fresh, or carried over from one of your own earlier
+exercises (see CLAUDE.md's "Exercise files"). Claude never writes or
+completes any of it (see CLAUDE.md's "Hard constraints").
 
 ## Spin up a node
 

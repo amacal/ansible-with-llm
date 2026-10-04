@@ -1,0 +1,6 @@
+- "find-files-by-glob"
+- "loop-over-registered-results"
+- "label-loop-output"
+- "cleanup-in-always-section"
+- "assert-find-read-the-directory"
+- "diagnose-silent-skipped-path"

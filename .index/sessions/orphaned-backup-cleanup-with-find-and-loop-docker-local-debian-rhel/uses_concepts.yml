@@ -1,0 +1,5 @@
+- "Handlers and Notify (docker-local, debian+rhel)"
+- "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
+- "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
+- "Docker Dynamic Inventory (docker-local)"
+- "Host Key Checking for Recreated Containers (docker-local)"

@@ -91,9 +91,10 @@ directory_layout:
       capabilities.yml: {format: "YAML list of lowercase-dash-separated capability tags (e.g. write-idempotent-package-task, template-config-with-handler, encrypt-var-with-vault), or —"}
     omitted_on_purpose:
       reuses_code: >
-        Not a separate file. Genuine from-scratch work per CLAUDE.md's "Hard constraints"
-        means verbatim reuse across exercises should be rare; when an exercise is a real
-        continuation of a prior one it belongs in derived_from.yml instead — a thin retarget
+        Not a separate file. Carrying over the user's own scaffolding or tasks from an
+        earlier exercise is routine per CLAUDE.md's "Exercise files" and records nothing
+        here; when an exercise is a real continuation of a prior one it belongs in
+        derived_from.yml instead — a thin retarget
         of a previous role to a new target environment IS a derived_from relationship, not
         a distinct "reused code" fact needing its own field.
 

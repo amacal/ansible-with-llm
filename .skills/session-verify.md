@@ -6,7 +6,7 @@ Your prompt should already include the write agent's report: every file it wrote
 
 **Exercise directory (never skip — this is also where "Hard constraints" violations hide):**
 
-1. Every playbook/role/task file reads as genuinely written from scratch — flag anything that looks like a vendored Galaxy role dropped in wholesale rather than hand-written tasks.
+1. Every playbook/role/task file reads as genuinely the user's own work (fresh, or carried over from their own earlier exercises) — flag anything that looks like a vendored Galaxy role dropped in wholesale rather than hand-written tasks.
 2. No `shell`/`command` module standing in for a proper idempotent module without an explicit justification in the notes file.
 3. No plaintext secret (a password, an API token, a private key) anywhere in the exercise directory — flag immediately if found, regardless of any other check's outcome.
 4. Idempotency was actually verified — the write agent's report (or the notes file's Observable behavior section) states a second run reported zero `changed` tasks, not just "it ran."

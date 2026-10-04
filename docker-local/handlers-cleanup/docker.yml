@@ -1,0 +1,14 @@
+plugin: community.docker.docker_containers
+connection_type: ssh
+strict: True
+compose:
+  ansible_ssh_host: docker_networksettings.IPAddress
+  ansible_ssh_port: "22"
+groups:
+  debian: docker_config.Labels.os_family == "debian"
+  rhel: docker_config.Labels.os_family == "rhel"
+filters:
+  - exclude: docker_config.Labels.os_family is not defined
+  - exclude: docker_config.Labels.os_family not in ['debian', 'rhel']
+  - include: inventory_hostname.startswith('handlers-cleanup-')
+  - exclude: True
