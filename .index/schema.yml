@@ -161,6 +161,18 @@ directory_layout:
         Not a file. Compute on demand: `ls .index/future-targets/` gives exactly this list
         in title form (read each file's title field).
 
+  teaching_calibration:
+    path: ".index/teaching/calibration.yml"
+    format: >
+      YAML mapping with one key, dimensions: a list of {name, variants (mapping of variant
+      name to one-line description), current_default, trials}. Each trial is {session
+      (a sessions/ slug), variant, signals (list of strings)}.
+    curation: >
+      Hand-curated at each close per CLAUDE.md's "Teaching calibration". Signals are
+      observable only — the user's own words quoted, counts, prediction outcomes — never
+      a judgment of the person. current_default changes only on recorded signals or an
+      explicit user request.
+
   edges:
     path: ".index/edges/<slug>.yml"
     one_file_per: "one non-obvious/inferred/historically-important relationship a session's own fields would understate"

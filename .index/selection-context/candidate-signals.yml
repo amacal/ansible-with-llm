@@ -1,0 +1,9 @@
+continuation:
+  - "Packages and System State now ends at Orphaned Backup Cleanup; the sshd drop-in play (render, validate, merged check, rescue, always cleanup) is mature enough to be repackaged as a role"
+  - "Inventory and Connectivity has one explicit future target left: Child Group Nesting by OS Version (docker-local, rhel), blocked on a second RHEL-family base image"
+consolidation:
+  - "Nine sessions, all docker-local; block/rescue/always, register+assert and become have each been applied several times and could be recapped together before roles"
+new_branch:
+  - "Roles, vault, tags and performance (forks/strategy/async) have zero sessions"
+  - "vagrant-local and lxd-local have zero sessions; both need one-time host setup first"
+explicit_commitment: —

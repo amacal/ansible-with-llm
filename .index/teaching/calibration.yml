@@ -1,0 +1,42 @@
+# Teaching-approach calibration — see CLAUDE.md "Teaching calibration" and
+# .index/schema.yml teaching_calibration. Observable signals only: the user's
+# own stated preferences (quoted), counts, and outcomes. Never a judgment of
+# the person.
+dimensions:
+  - name: "step-size"
+    variants:
+      fine: "one atomic fact or sub-decision per message"
+      chunk: "one exercise step per message (a small cluster of related edits plus one prediction), still one question"
+    current_default: "chunk"
+    trials:
+      - session: "orphaned-backup-cleanup-with-find-and-loop-docker-local-debian-rhel"
+        variant: "fine"
+        signals:
+          - "user said: \"your questions are a bit too small steps and to detailed\" and \"I am a bit lost what you ask\""
+          - "several answers addressed only the first half of a two-part question"
+      - session: "orphaned-backup-cleanup-with-find-and-loop-docker-local-debian-rhel"
+        variant: "chunk"
+        signals:
+          - "user completed multi-edit steps (find, loop, delete, verify assert) between messages without asking for clarification"
+          - "predictions for the backup count, the always behaviour on validate failure and the Rocky guard failure were all confirmed"
+  - name: "two-part-questions"
+    variants:
+      single: "one question with one ask"
+      two-part: "one question with a 'what' half and a 'why' half"
+    current_default: "single"
+    trials:
+      - session: "orphaned-backup-cleanup-with-find-and-loop-docker-local-debian-rhel"
+        variant: "two-part"
+        signals:
+          - "the second half went unanswered at least five times and needed a follow-up message"
+  - name: "letting-a-failure-happen"
+    variants:
+      predict-only: "ask for a prediction of the failure and move on"
+      observe: "let the user run the failing version and read the real output"
+    current_default: "observe"
+    trials:
+      - session: "orphaned-backup-cleanup-with-find-and-loop-docker-local-debian-rhel"
+        variant: "observe"
+        signals:
+          - "user asked for it: \"I want to see it fails first as my lesson\""
+          - "the observed failure (skipped_paths guard on Rocky) was later explained correctly at the mechanism level"

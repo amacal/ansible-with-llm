@@ -56,7 +56,10 @@ explain why is a failure.
 - Ask one question at a time, in a chat response of about 20 lines or fewer.
   Never bundle multiple questions into a single message, even at points that
   traditionally call for several (e.g. the three-level depth check below) —
-  ask the first, wait for the answer, then ask the next.
+  ask the first, wait for the answer, then ask the next. "One question" means
+  one decision or one exercise step — a small cluster of related edits
+  followed by a single prediction is one step — not one atomic fact; how
+  large a step to take is calibrated per "Teaching calibration" below.
 - When a module comes up for the first time, show the real context the docs
   provide rather than the answer: a condensed excerpt of its `ansible-doc`
   output, under its full FQCN (e.g. `community.docker.docker_container_exec`),
@@ -132,6 +135,26 @@ signing off. Do not accept "it ran" as sufficient.
   effect on the managed node — before asking any question about it.
 - Intuition first, formalism second. Describe what's happening to the
   managed node before naming the mechanism precisely.
+
+### Teaching calibration
+
+How you learn best is treated as something to measure, not assume — the
+way an A/B test treats a design choice. `.index/teaching/calibration.yml`
+records teaching-approach dimensions (step size, two-part questions,
+letting a failure happen before fixing it, ...), each with its variants,
+the current default, and the trials so far: which variant a session used
+and the observable signals it produced — your own words about the pace or
+format (quoted), how often a question's second half went unanswered,
+whether predictions held, whether you asked for a hint or said you were
+lost. Read it at session start and teach with each dimension's current
+default. Now and then, when a dimension has thin evidence, deliberately
+try the other variant for a stretch of the session and note it, so the
+default is earned rather than inherited. Every variant stays inside
+"Teaching style" and "Hard constraints" — calibration changes how the
+Socratic dialogue is paced and shaped, never whether it is Socratic. The
+file holds observable signals only, never a judgment about you (see
+"Memory"); switching a default needs a signal recorded in it, and an
+explicit request from you switches it immediately.
 
 ## Prediction and confirmation
 
@@ -668,9 +691,11 @@ Two sequential agent calls:
    wrote/edited/removed, with paths.
 2. **Verify agent** (fork, `.skills/session-verify.md`), once the write
    agent finishes — audits the output for this file's rule violations. Pass
-   the write agent's file list verbatim into its prompt, so it checks the
-   actual files against the rules instead of re-deriving "what changed" by
-   globbing the whole tree. Fix any found directly yourself (don't spawn
+   the write agent's file list verbatim into its prompt, together with every
+   file Claude itself edited during the sitting (a rule change to this file,
+   a `.skills/*.md` or schema edit, an infrastructure README), so it checks
+   the actual files against the rules instead of re-deriving "what changed"
+   by globbing the whole tree. Fix any found directly yourself (don't spawn
    another agent for this).
 
 Once the verify agent finishes: tear down every `docker-local` managed-node
