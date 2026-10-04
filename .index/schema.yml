@@ -76,7 +76,7 @@ directory_layout:
         field_notes:
           title: "exact Concept Title, double-quoted"
           kind: "implementation | review"
-          target: "docker-local | vagrant-local | hetzner-cloud | aws-cloud"
+          target: "docker-local | vagrant-local | lxd-local | hetzner-cloud | aws-cloud"
           file: "{target-dir}/{dir}/ for implementation sessions (trailing slash — an exercise is a directory; {dir} is the short exercise directory name, not the slug — this field is the current location and is updated on rename), — for review sessions"
           date: "YYYY-MM-DD, double-quoted"
       summary.txt:
@@ -185,7 +185,7 @@ computed_queries:
   capability_lookup: 'grep -rl "<tag>" .index/sessions/*/capabilities.yml'
   concept_frequency: "grep -h '^- ' .index/sessions/*/concepts.yml | sed 's/^- //' | sort | uniq -c | sort -rn   (tag counts across every session — use to see which areas are saturated vs. barely touched; feeds session-select's breadth check)"
   capability_frequency: "grep -h '^- ' .index/sessions/*/capabilities.yml | sed 's/^- //' | sort | uniq -c | sort -rn"
-  target_frequency: "grep -h '^target:' .index/sessions/*/meta.yml | sort | uniq -c | sort -rn   (how sessions are distributed across docker-local/vagrant-local/hetzner-cloud/aws-cloud)"
+  target_frequency: "grep -h '^target:' .index/sessions/*/meta.yml | sort | uniq -c | sort -rn   (how sessions are distributed across docker-local/vagrant-local/lxd-local/hetzner-cloud/aws-cloud)"
   completed_by_date: "grep -h '^  date:' .index/sessions/*/meta.yml | sort"
   by_date: 'grep -l "date: \"<YYYY-MM-DD>\"" .index/sessions/*/meta.yml'
   future_targets_list: "ls .index/future-targets/"
@@ -205,4 +205,4 @@ validation:
     - "no future-targets/<slug>.yml title is also a sessions/*/meta.yml title (a target must be deleted the moment it graduates)"
     - "every branches/*.yml's sessions and frontier entries resolve to a real sessions/*/meta.yml title"
     - "every concepts.yml/capabilities.yml tag matches ^[a-z0-9]+(-[a-z0-9]+)*$"
-    - "meta.yml's target field is one of docker-local | vagrant-local | hetzner-cloud | aws-cloud, and matches the target implied by the file field's directory prefix"
+    - "meta.yml's target field is one of docker-local | vagrant-local | lxd-local | hetzner-cloud | aws-cloud, and matches the target implied by the file field's directory prefix"

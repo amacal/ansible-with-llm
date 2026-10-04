@@ -10,6 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && usermod -aG libvirt,kvm vscode
 
+RUN mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://pkgs.zabbly.com/key.asc -o /etc/apt/keyrings/zabbly.asc \
+    && echo "deb [signed-by=/etc/apt/keyrings/zabbly.asc] https://pkgs.zabbly.com/incus/stable bookworm main" \
+        > /etc/apt/sources.list.d/zabbly-incus-stable.list \
+    && apt-get update && apt-get install -y --no-install-recommends incus-client \
+    && rm -rf /var/lib/apt/lists/*
+
 USER vscode
 ENV PATH="/home/vscode/.local/bin:${PATH}"
 

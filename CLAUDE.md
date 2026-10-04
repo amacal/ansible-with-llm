@@ -27,12 +27,23 @@ explain why is a failure.
   devcontainer rebuild with KVM passthrough, and only works on a host that
   actually supports nested virtualization — unavailable otherwise, the same
   as any other missing prerequisite. Directory: `vagrant-local/`.
+- **Incus system containers (local, remote client to a host-side Incus)** —
+  ephemeral, real systemd-as-PID-1 containers (see
+  `targets/lxd-local/README.md`), sitting between `docker-local` and
+  `vagrant-local` on realism but chosen for a different reason: Ansible can
+  reach it through a native, non-SSH connection plugin talking directly to
+  the provider's API. Every other target in this repo is "Ansible over SSH
+  to a Linux host"; this is "Ansible over a provider's own API" — a genuinely
+  different mechanism, not just another host. Needs Incus installed on the
+  host machine itself (not nested in the devcontainer) and a one-time remote
+  connection token — unavailable until that's done, same as any other
+  missing prerequisite. Directory: `lxd-local/`.
 - **Hetzner Cloud / AWS (proposed when genuinely needed)** — real cloud
   infrastructure via the `hetzner.hcloud`/`amazon.aws` collections. Neither
   is held back waiting for you to offer credentials: whenever an exercise
   genuinely needs real cloud infrastructure — a cloud-specific dynamic
   inventory plugin, IAM-aware automation, genuine network latency/DNS,
-  anything docker-local/vagrant-local can't meaningfully test — the select
+  anything docker-local/vagrant-local/lxd-local can't meaningfully test — the select
   or plan agent proposes it and names exactly which credential is needed.
   You supply it per session; it's never stored in the repo or baked into the
   devcontainer image. Directories: `hetzner-cloud/`, `aws-cloud/`.
@@ -161,6 +172,15 @@ silently not exercise the real mechanism at all) and only mean something
 against a real VM. Running the same exercise against both is how that gap
 gets found deliberately, in a session built for it, instead of in
 production.
+
+A third, orthogonal axis: `lxd-local` isn't primarily about realism at all —
+it's about the connection layer. `docker-local` and `vagrant-local` both
+reach their node over SSH; `lxd-local` can reach its instance through a
+native, non-SSH connection plugin talking to Incus's own API. Running the
+same role both ways — once over SSH, once over the native plugin — separates
+what's fundamental to the role's own task logic from what was actually an
+assumption baked in by the connection mechanism (host-key handling, how
+`become` behaves, how facts get gathered).
 
 Once Hetzner/AWS are active, the same forcing function applies one level up:
 a local run (container or VM) versus a real cloud instance of the same role
@@ -682,6 +702,10 @@ decision.
 - Tags, `--check`/`--diff` mode, idempotency.
 - Dynamic inventory plugins (Docker now; `hcloud`/`aws_ec2` once those
   targets are active).
+- Connection plugins: SSH (the default, used by `docker-local`/
+  `vagrant-local`) versus a provider-native API connection (`lxd-local`) —
+  what a connection plugin actually owns versus what stays constant
+  regardless of it.
 - Collections: installing, using, understanding FQCNs (fully-qualified
   collection names).
 - Performance: forks, strategy, `async`/`poll`, `delegate_to`.
