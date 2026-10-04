@@ -1,0 +1,6 @@
+title: "Orphaned Backup Cleanup with find and loop (docker-local, debian+rhel)"
+status: not-completed
+mentioned_by:
+  - "Block and Rescue Revert of a Failed Config Change (docker-local, debian+rhel)"
+evidence:
+  - ".history/2026-10/2026-10-04-block-and-rescue-revert-of-a-failed-config-change-docker-local-debian-rhel.yml: not_completed (cleanup of accumulated and orphaned *~ backups deferred to ansible.builtin.find with a loop, or predictable backup names)"

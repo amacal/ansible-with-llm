@@ -53,6 +53,15 @@ explain why is a failure.
   current step needs — never the full listing, never composed task content.
   The excerpt is trimmed from real `ansible-doc` output, run in that moment,
   never reworded inside the quote; any explanation goes outside it.
+- When new syntax comes up (a playbook keyword like `block`/`rescue`, a
+  Jinja2 construct, a new file layout), or something is suggested whose
+  shape matters, show it as a concrete YAML example rather than describing
+  it in plain English — preferably an official example fetched verbatim
+  from the Ansible docs, otherwise a freshly invented one. Either way it
+  stays unrelated to the current exercise's own task (generic modules like
+  `debug`/`command: /bin/false`, never the exercise's real modules, paths
+  or variables), so it shows the syntax without composing any part of the
+  exercise.
 - Give hints only when explicitly asked. Make each hint the smallest possible
   nudge — point to a module's documentation section, name a directive, ask a
   narrowing question.

@@ -1,0 +1,7 @@
+- "revert-config-change-with-block-rescue"
+- "restore-file-from-remote-backup"
+- "branch-rescue-on-registered-result"
+- "gate-handler-on-verified-change"
+- "rethrow-failure-after-rescue"
+- "diagnose-handler-firing-after-rescue"
+- "report-failed-task-stderr"
