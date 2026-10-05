@@ -88,6 +88,20 @@ docker run -d --name <exercise-dir>-node1 --label os_family=debian \
   -p 0:22 ansible-node-debian
 ```
 
+What a node's sshd actually announces on the wire (its identification
+string, which includes any `VersionAddendum` once sshd has been restarted)
+can be read from inside the container without any SSH client. The read goes
+through bash's `/dev/tcp` pseudo-device, which is a bash feature rather than
+a POSIX one. `sh -c` therefore fails on the Debian image, where `sh` is
+`dash`, so the command names `bash` explicitly. Note that the stock Debian
+string already contains the word `Debian`
+(`SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u…`), so a banner check only proves
+something if it looks for a value the stock string can't contain:
+
+```bash
+docker exec <exercise-dir>-node1 bash -c 'exec 3<>/dev/tcp/127.0.0.1/22; head -1 <&3'
+```
+
 The bridge IP, the key path, and every other connection detail belong in
 that exercise's own `inventory.ini` and `ansible.cfg` — never here. The IP is
 ephemeral (valid only for that container's lifetime), so an exercise's
