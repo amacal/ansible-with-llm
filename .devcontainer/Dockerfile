@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client jq tzdata \
     qemu-kvm libvirt-daemon-system libvirt-clients virtinst \
     ruby-dev build-essential libvirt-dev libxml2-dev libxslt1-dev zlib1g-dev pkg-config \
-    vagrant \
     && rm -rf /var/lib/apt/lists/* \
     && usermod -aG libvirt,kvm vscode
 
@@ -15,6 +14,12 @@ RUN mkdir -p /etc/apt/keyrings \
     && echo "deb [signed-by=/etc/apt/keyrings/zabbly.asc] https://pkgs.zabbly.com/incus/stable bookworm main" \
         > /etc/apt/sources.list.d/zabbly-incus-stable.list \
     && apt-get update && apt-get install -y --no-install-recommends incus-client \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg -o /etc/apt/keyrings/hashicorp.asc \
+    && echo "deb [signed-by=/etc/apt/keyrings/hashicorp.asc] https://apt.releases.hashicorp.com bookworm main" \
+        > /etc/apt/sources.list.d/hashicorp.list \
+    && apt-get update && apt-get install -y --no-install-recommends vagrant \
     && rm -rf /var/lib/apt/lists/*
 
 USER vscode
