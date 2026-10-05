@@ -1,0 +1,5 @@
+title: "Packaging the sshd Drop-in Play as a Role (docker-local, debian+rhel)"
+kind: implementation
+target: docker-local
+file: docker-local/roles-sshd/
+date: "2026-10-05"

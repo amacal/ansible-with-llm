@@ -1,0 +1,62 @@
+date: "2026-10-05"
+title: "Packaging the sshd Drop-in Play as a Role (docker-local, debian+rhel)"
+session:
+  file: docker-local/roles-sshd/
+  status: completed
+  attempted:
+    - "Repackage the handlers-cleanup sshd drop-in play as a role sshd_dropin on a Debian 12 and a Rocky 9 node, with a from-scratch converge and zero changed on an immediate second run"
+  explored:
+    - "Which values in the copied handlers-cleanup files are tied to the old exercise name (docker.yml include filter, ansible.cfg ssh_common_args, site.yml known_hosts path) and the symptom of each when stale"
+    - "Whether group_vars can feed an inventory plugin filter, whether ansible.cfg values are Jinja2-rendered, and why a task argument can use the same variable"
+    - "Role directory structure (official docs example) and the shape of a role tasks/main.yml and handlers/main.yml (invented debug example)"
+    - "Mapping each part of site.yml to a role directory or the play"
+    - "Role vars/ vs defaults/ precedence against per-family group_vars (docs one-line descriptions), predicted but not run"
+    - "ansible-lint var-naming[no-role-prefix] on registered variables and the collision between two roles registering the same name"
+    - "when: as a list of and-joined conditions (official Conditionals docs example)"
+    - "Ordering of roles: vs tasks: within a play"
+    - "Where handlers notified from a role flush relative to the play's tasks:"
+    - "What a stock Debian sshd banner contains and whether search_regex: Debian could ever fail on Debian"
+    - "Role argument validation via meta/argument_specs.yml (docs excerpt and trimmed official sample)"
+    - "Required argument vs silent default as the role contract for ssh_banner"
+    - "Handler ownership: role vs play, play-wide handler name lookup, renaming the notify target to describe intent"
+  tried:
+    - "ansible_lab_name/ansible_lab_path in group_vars/all.yaml referenced from docker.yml, ansible.cfg and site.yml; docker.yml and ansible.cfg reverted to literal roles-sshd, site.yml kept the variable"
+    - "One playbook run issued from docker-local/files-templates instead of docker-local/roles-sshd"
+    - "Post-block find/assert, flush_handlers and wait_for first moved into the role, then flush_handlers and wait_for moved back to the play"
+    - "Single play with roles: sshd_dropin and the seeding tasks under tasks:"
+    - "Two plays (seeding play, role play) with flush_handlers and wait_for first left in play 1, then moved to play 2"
+    - "Two plays with flush_handlers removed from play 2"
+    - "ssh_banner values changed from Debian/Rocky to DebianX/RockyX and flush_handlers restored"
+    - "meta/argument_specs.yml with ssh_banner type str required true; ssh_banner temporarily commented out in group_vars/rhel.yaml"
+    - "Restart Container handler moved from the role to play 2 handlers: and renamed Restart SSH, role handlers/ directory removed"
+  corrections:
+    - "Expected {{ ansible_lab_path }} in ansible.cfg ssh_common_args to be rendered; a probe showed ssh received the literal text split as 'UserKnownHostsFile={{' lab_path '}}/kh'"
+    - "Predicted seeding tasks would run before the role in a play with roles: and tasks:; observed all sshd_dropin tasks printed before Collect and Write"
+    - "Predicted Restart Container would run at the end of the role; observed it ran after play 2's tasks:, after wait_for had timed out on node2, and only for node1"
+  bugs_found:
+    - "docker.yml include filter referencing ansible_lab_name from group_vars failed inventory parsing ('ansible_lab_name' is undefined); reverted to a literal prefix"
+    - "Role under roles: ran before seeding under tasks:; on recreated nodes with an empty known_hosts both hosts were UNREACHABLE (Host key verification failed) at Render; fixed by a separate seeding play"
+    - "flush_handlers removed from play 2: wait_for ran before the restart, node2 timed out after 31 s searching for Rocky (ok=9 changed=2 failed=1); flush_handlers restored"
+    - "search_regex Debian matched the stock Debian banner SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u10, so the check could not fail on node1; banner values changed to DebianX/RockyX"
+    - "ansible-lint var-naming[no-role-prefix] on register: ssh_banner_result and backup_files inside the role; renamed with sshd_dropin_ prefix"
+  completed:
+    - "Wrote docker-local/roles-sshd/ (ansible.cfg, docker.yml, group_vars/all.yaml, debian.yaml, rhel.yaml, site.yml, roles/sshd_dropin/tasks/main.yml, roles/sshd_dropin/templates/banner.j2, roles/sshd_dropin/meta/argument_specs.yml)"
+    - "Baseline of the unchanged carried-over play on fresh nodes: ok=10 changed=4 on both; immediate rerun ok=9 changed=0 skipped=1"
+    - "Single-play roles+tasks layout on converged nodes: ok=9 changed=0 skipped=1 with role tasks first; on recreated nodes with empty known_hosts: ok=0 unreachable=1 on both"
+    - "Two-play layout with DebianX/RockyX and flush on fresh nodes: ok=11 changed=3 on both; rerun ok=10 changed=0 skipped=1"
+    - "Argument spec added: validation task reported ok, ok=11 changed=0 skipped=1 on both; with ssh_banner removed from rhel.yaml node2 failed at validation with missing required arguments: ssh_banner (ok=3 failed=1) while node1 reached wait_for (ok=11 changed=0)"
+    - "Final layout with play handler Restart SSH on fresh nodes: ok=12 changed=3 skipped=1 on both, RUNNING HANDLER [Restart SSH] at flush_handlers; immediate second run ok=11 changed=0 skipped=1 on both"
+    - "ansible-lint passed at the production profile on the final files"
+    - "Three-level sign-off (observable, mechanism, rationale) answered"
+  not_completed:
+    - "gather_facts left at its default in play 2 (raised, not addressed)"
+    - "Retargeting sshd_dropin to vagrant-local with a systemd restart handler (named as the motivation for moving the handler, not attempted)"
+  open_questions:
+    - "Why the block's rescue: and always: did not run when Render failed with UNREACHABLE"
+    - "Why ansible-lint flags unprefixed registered variables inside the role but accepts the unprefixed ssh_banner the role consumes and declares in argument_specs"
+  notes:
+    - "All tasks, scaffolding and banner.j2 carried over from docker-local/handlers-cleanup/; the session's new work was the role structure, argument spec and handler relocation"
+    - "Containers roles-sshd-node1 (os_family=debian, 172.17.0.3) and roles-sshd-node2 (os_family=rhel, 172.17.0.4), recreated several times during the session"
+    - "One run of the two-play layout was against nodes already converged by an earlier run not shown in the session; Claude recreated the nodes before the handler-timing test"
+    - "yaml[truthy] on True values in docker.yml was pre-existing in handlers-cleanup/docker.yml and fixed in passing"
+    - "Two playbook runs were made without a prediction stated beforehand"

@@ -1,0 +1,8 @@
+---
+argument_specs:
+  main:
+    options:
+      ssh_banner:
+        description: "SSH banner text"
+        type: str
+        required: true

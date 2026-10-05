@@ -1,0 +1,8 @@
+- "package-play-as-role"
+- "order-seeding-before-role-with-separate-play"
+- "flush-role-handlers-before-verification"
+- "validate-role-arguments-with-argument-specs"
+- "provide-role-notified-handler-from-play"
+- "prefix-role-registered-variables"
+- "make-banner-check-falsifiable"
+- "diagnose-variable-unavailable-at-inventory-time"

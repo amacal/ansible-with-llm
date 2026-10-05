@@ -1,9 +1,10 @@
 continuation:
-  - "Packages and System State now ends at Orphaned Backup Cleanup; the sshd drop-in play (render, validate, merged check, rescue, always cleanup) is mature enough to be repackaged as a role"
+  - "Roles and Reuse now holds the sshd_dropin role, whose restart handler lives in the play so each target can supply its own; sshd Drop-in Role Retarget with a systemd Restart Handler (vagrant-local, debian+rhel) is its explicit next step, needing /dev/kvm after a devcontainer rebuild"
   - "Inventory and Connectivity has one explicit future target left: Child Group Nesting by OS Version (docker-local, rhel), blocked on a second RHEL-family base image"
+  - "Roles and Reuse open questions: why rescue/always did not run on an UNREACHABLE task inside a block, and why ansible-lint accepts the unprefixed consumed ssh_banner"
 consolidation:
-  - "Nine sessions, all docker-local; block/rescue/always, register+assert and become have each been applied several times and could be recapped together before roles"
+  - "Ten sessions, all docker-local; block/rescue/always, register+assert, handlers/flush and become have each been applied several times"
 new_branch:
-  - "Roles, vault, tags and performance (forks/strategy/async) have zero sessions"
+  - "Vault, tags and performance (forks/strategy/async) have zero sessions"
   - "vagrant-local and lxd-local have zero sessions; both need one-time host setup first"
 explicit_commitment: —

@@ -1,0 +1,7 @@
+title: "Roles and Reuse"
+sessions:
+  - "Packaging the sshd Drop-in Play as a Role (docker-local, debian+rhel)"
+frontier:
+  - "Packaging the sshd Drop-in Play as a Role (docker-local, debian+rhel)"
+explicit_future_targets:
+  - "sshd Drop-in Role Retarget with a systemd Restart Handler (vagrant-local, debian+rhel)"

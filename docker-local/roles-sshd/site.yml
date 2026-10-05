@@ -1,0 +1,47 @@
+---
+- name: Prepare Docker
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Collect Public Host Keys
+      delegate_to: localhost
+      register: host_key_result
+      changed_when: false
+      check_mode: false
+      community.docker.docker_container_exec:
+        container: "{{ inventory_hostname }}"
+        command: "cat /etc/ssh/ssh_host_ecdsa_key.pub"
+
+    - name: Write Public Host Keys to File
+      delegate_to: localhost
+      check_mode: false
+      throttle: 1
+      ansible.builtin.known_hosts:
+        path: "{{ ansible_lab_path }}/known_hosts"
+        name: "{{ ansible_ssh_host }}"
+        key: "{{ ansible_ssh_host }} {{ host_key_result.stdout }}"
+
+- name: Play Roles
+  hosts: all
+  roles:
+    - sshd_dropin
+  tasks:
+    - name: Run pending handlers
+      ansible.builtin.meta:
+        flush_handlers
+
+    - name: Ensure Banner is Applied
+      delegate_to: localhost
+      ansible.builtin.wait_for:
+        host: "{{ ansible_ssh_host }}"
+        port: "{{ ansible_ssh_port }}"
+        search_regex: "{{ ssh_banner }}"
+        timeout: 30
+
+  handlers:
+    - name: Restart SSH
+      delegate_to: localhost
+      community.docker.docker_container:
+        name: "{{ inventory_hostname }}"
+        restart: true
+        state: started

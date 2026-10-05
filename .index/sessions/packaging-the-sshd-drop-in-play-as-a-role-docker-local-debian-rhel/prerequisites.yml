@@ -1,0 +1,4 @@
+- "Handlers and Notify (docker-local, debian+rhel)"
+- "Block and Rescue Revert of a Failed Config Change (docker-local, debian+rhel)"
+- "Orphaned Backup Cleanup with find and loop (docker-local, debian+rhel)"
+- "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"

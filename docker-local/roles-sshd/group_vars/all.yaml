@@ -1,0 +1,7 @@
+---
+ansible_user: ansible
+ansible_private_key_file: /workspaces/ansible-with-llm/.tmp/ansible_node_key
+ansible_python_interpreter: /usr/bin/python3
+
+ansible_lab_name: roles-sshd
+ansible_lab_path: /workspaces/ansible-with-llm/docker-local/{{ ansible_lab_name }}

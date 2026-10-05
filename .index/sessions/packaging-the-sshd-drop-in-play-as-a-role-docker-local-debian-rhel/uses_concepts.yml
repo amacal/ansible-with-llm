@@ -1,0 +1,4 @@
+- "Jinja2 Templates and --diff (docker-local, debian+rhel)"
+- "Docker Dynamic Inventory (docker-local)"
+- "Host Key Checking for Recreated Containers (docker-local)"
+- "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"

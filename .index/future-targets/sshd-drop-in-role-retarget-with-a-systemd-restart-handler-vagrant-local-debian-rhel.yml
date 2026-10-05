@@ -1,0 +1,6 @@
+title: "sshd Drop-in Role Retarget with a systemd Restart Handler (vagrant-local, debian+rhel)"
+status: not-completed
+mentioned_by:
+  - "Packaging the sshd Drop-in Play as a Role (docker-local, debian+rhel)"
+evidence:
+  - ".history/2026-10/2026-10-05-packaging-the-sshd-drop-in-play-as-a-role-docker-local-debian-rhel.yml: not_completed (retargeting sshd_dropin to vagrant-local with a systemd restart handler named as the motivation for moving the handler to the play)"
