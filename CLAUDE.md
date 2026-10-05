@@ -303,12 +303,14 @@ not lost inside a single title.
   `.history/` (session-event context), and returns exactly 3–5 candidates
   spanning both Ansible-concept breadth and target-environment breadth,
   never re-proposing anything completed.
-- When `.other/` holds sibling `-with-llm` repos, the select agent also
-  refreshes each (fast-forward `git pull` only, skipped if that repo has
-  local changes) and skims its recent sessions purely for situational
-  awareness — how active you've been elsewhere and on what, never used to
-  affect this repo's own prerequisite/candidate logic, and never turned into
-  a personal/psychological judgment.
+- When `GITHUB_TOKEN` is available and this repo's own remote resolves to an
+  owner, the select agent checks sibling `-with-llm` repos live (no local
+  clone kept between runs — see `.skills/session-select.md`'s step 1 for
+  exactly how the owner, the repo list, and each sibling's default branch are
+  all derived, never hardcoded) and skims recent sessions purely for
+  situational awareness — how active you've been elsewhere and on what,
+  never used to affect this repo's own prerequisite/candidate logic, and
+  never turned into a personal/psychological judgment.
 - Present the candidates to you as a plain text list myself — never via an
   interactive-choice tool, under any circumstances. The agent
   investigates/reports; it never decides or interacts with you.
@@ -705,7 +707,7 @@ container from this sitting (per `targets/docker-node/README.md`) and clear
 `.tmp/` — the only point in the sitting these may be removed.
 
 Then commit, locally, the same way every session: `git add -A` (gitignored
-paths — `.other/`, `.tmp/`, `.claude/settings.local.json` — are already
+paths — `.tmp/`, `.claude/settings.local.json` — are already
 excluded) then `git commit -m "Close session: <Concept Title>"`. Never
 `git push` — publishing anywhere beyond the local repository is your manual
 decision.
