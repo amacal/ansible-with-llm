@@ -170,6 +170,41 @@ past a wrong prediction without understanding it. A diagnosed mismatch
 belongs in that session's `.history/` entry as a `corrections` item, stated
 factually as predicted-versus-observed.
 
+## Retention checks
+
+A session's own close proves you could do it with this session's help. It
+doesn't yet prove you can do it again, unaided, later — that's a different
+claim, and this repo tracks it separately rather than assuming a completed
+session already means lasting skill.
+
+For a session whose concept is genuinely foundational — one later sessions
+are likely to lean on as a real prerequisite, not a one-off detail — the
+write agent schedules a retention check: a `.index/cold-runs/<slug>.yml`
+file naming the concept, a due date roughly 1–2 weeks out, and
+`status: pending`. Not every session needs one; a thin retarget or a minor
+variant usually doesn't. This is a judgment call, stated explicitly in the
+write agent's report, the same way a branch or future-target decision
+already is — never mechanical, never skipped just because it's easier not
+to decide.
+
+A due retention check takes priority in session selection (see "Session
+selection") over a new topic: a small, genuinely new task exercising the
+same concept from a different angle — a different managed-node state or
+module than the original exercise used — attempted without re-reading the
+original exercise's notes file and with hints withheld more strictly than
+usual (the point is finding out what actually stuck, not re-teaching it
+under a different name). It's verified the exact same way every other
+exercise here is: a second idempotent run reporting zero `changed` tasks,
+never a softer bar just because it's a review.
+
+Passing updates that concept's `.index/sessions/<slug>/meta.yml` `status`
+field from `demonstrated` to `retained` (see "Fast index"). Failing doesn't
+just quietly expire the check — it's evidence the concept needs real
+reinforcement, and feeds back into session selection as a priority
+candidate, the same weight as an open gap. Either outcome is recorded in
+`.index/cold-runs/<slug>.yml` and the resolving session's own `.history/`
+entry; a retention check is never silently dropped once due.
+
 ## Idempotency discipline
 
 An exercise is not done just because the playbook ran without error. Run it
@@ -219,6 +254,48 @@ with the target in parentheses — e.g. "Idempotent Nginx Install
 — so the two sessions get distinct slugs and the comparison itself is
 recorded as a `related_to` link between them in `.index/` (see "Fast index"),
 not lost inside a single title.
+
+## Cross-repo transfer
+
+The sibling-repo check in `.skills/session-select.md`'s step 1 does more
+than report situational awareness now: when a candidate topic here genuinely
+overlaps a concept a sibling `-with-llm` repo has already covered, the
+select or plan agent says so explicitly, and names that sibling session's
+own recorded status (`demonstrated` or `retained`) there — never assumed,
+always read live from that sibling's actual `.index/` at the time, the same
+ephemeral-clone discipline as everywhere else in this family.
+
+Overlap is never resolved mechanically from a matching word in
+`concepts.yml`. Knowing idempotency as a general concept doesn't mean you
+know how a specific Ansible module's own check-mode behavior actually works,
+and knowing a module's behavior on one target doesn't mean you know how a
+completely different tool's own verification discipline works (a from-scratch
+image builder has no converging state to check at all) — treating either as
+transfer without testing it is exactly the kind of false knowledge-graph
+entry this repo refuses to record. Three honest outcomes, chosen
+deliberately each time, never defaulted:
+
+- **Cite, don't re-teach** — the sibling's evidence is `retained`, and this
+  repo's own hard constraints and domain genuinely don't require an
+  independent demonstration (rare — this repo's own "Hard constraints"
+  specifically forbid reusing someone else's implementation, so this applies
+  to genuine conceptual citations, never to skipping the actual playbook/role
+  work).
+- **Bridge and test transfer** — the sibling's evidence is `demonstrated` or
+  `retained`, but this domain is different enough that reapplying it here is
+  itself worth a short, explicitly-flagged session confirming it actually
+  transfers, rather than either a full from-scratch derivation or a silent
+  skip.
+- **Independent, from scratch** — the sibling's evidence doesn't clear the
+  bar (only loosely related, or not evidenced strongly enough), or this
+  repo's own "Hard constraints" require a from-scratch instance regardless of
+  what's proven elsewhere.
+
+When a concept is cited or bridged this way, record it in a new
+`.index/sessions/<slug>/cross_repo_links.yml` — `repo`, `title`,
+`relationship` (`cites` | `bridges`), and `evidence_status_there` — never
+folded into `prerequisites.yml`/`uses_concepts.yml`, which stay scoped to
+this repo's own sessions only (see "Fast index").
 
 ## Theory review
 
@@ -315,10 +392,16 @@ not lost inside a single title.
   owner, the select agent checks sibling `-with-llm` repos live (no local
   clone kept between runs — see `.skills/session-select.md`'s step 1 for
   exactly how the owner, the repo list, and each sibling's default branch are
-  all derived, never hardcoded) and skims recent sessions purely for
-  situational awareness — how active you've been elsewhere and on what,
-  never used to affect this repo's own prerequisite/candidate logic, and
-  never turned into a personal/psychological judgment.
+  all derived, never hardcoded). Two separate things come out of this: a
+  situational-awareness skim of recent sessions — how active you've been
+  elsewhere and on what, never turned into a personal/psychological
+  judgment, never affecting this repo's own prerequisite reasoning — and a
+  genuine concept-overlap check (see "Cross-repo transfer") that *does*
+  deliberately feed into candidate selection, specifically to avoid
+  re-teaching from scratch what's already solidly evidenced elsewhere. Keep
+  the two separate in the report: one is color, the other is a real input to
+  the decision, and also surfaces any due retention check (see "Retention
+  checks") first, ahead of new candidates.
 - Present the candidates to you as a plain text list myself — never via an
   interactive-choice tool, under any circumstances. The agent
   investigates/reports; it never decides or interacts with you.
@@ -456,10 +539,21 @@ schema, directory layout, and every read-side query: **`.index/schema.yml`**
 human/agent needs to know when writing or reading it.
 
 - One directory per completed session at `.index/sessions/<slug>/`, holding
-  `meta.yml` (`title`/`kind`/`target`/`file`/`date`), `summary.txt`, and one
-  small YAML list file per relationship: `prerequisites.yml`,
+  `meta.yml` (`title`/`kind`/`status`/`target`/`file`/`date`), `summary.txt`,
+  and one small YAML list file per relationship: `prerequisites.yml`,
   `uses_concepts.yml`, `derived_from.yml`, `related_to.yml`, `unlocks.yml`,
-  `future_targets.yml`, `concepts.yml`, `capabilities.yml`. Distinct
+  `future_targets.yml`, `concepts.yml`, `capabilities.yml` — plus an optional
+  `cross_repo_links.yml` (see "Cross-repo transfer"), present only when this
+  session actually cited or bridged a sibling repo's concept. `meta.yml`'s
+  `status` field is `demonstrated` (the default — produced and understood
+  this session, with this session's help) or `retained` (promoted only once
+  a scheduled retention check — see "Retention checks" — actually passes,
+  unaided, later). Status is advisory, not a hard gate, early on: when little
+  retention data exists yet, `demonstrated` is still enough to treat
+  something as a satisfied prerequisite; as retention evidence accumulates,
+  prefer citing a `retained` session over a merely `demonstrated` one
+  wherever the choice is actually available, and say so explicitly when it
+  wasn't. Distinct
   relationship types on purpose — chronology, reused technique, historical
   inspiration, and genuine prerequisites are different things, and
   collapsing them produces false prerequisites (a harder pattern implemented
@@ -497,12 +591,16 @@ human/agent needs to know when writing or reading it.
 - Global structure beyond `sessions/` — `.index/branches/<slug>.yml` (real
   clusters, not a forced taxonomy, each with a `frontier` of
   completed-but-not-yet-extended sessions), `.index/open-gaps/<category>/
-  <slug>.yml`, `.index/future-targets/<slug>.yml`, `.index/selection-context/`
-  (curated files — `active-branches.yml`, `candidate-signals.yml`,
-  `reusable-recent-capabilities.yml`; edited by hand, not derived), `.index/
-  edges/<slug>.yml` (non-obvious/inferred/historical relationships, with a
-  `confidence` and short `evidence` list so a weak inference is never
-  presented as fact).
+  <slug>.yml`, `.index/future-targets/<slug>.yml`, `.index/cold-runs/
+  <slug>.yml` (a scheduled retention check — `concept`/`due_date`/`status`
+  pending|passed|failed — see "Retention checks"; unlike `future-targets`,
+  never deleted once resolved — a passed or failed check is itself evidence,
+  kept as the permanent record of when retention was actually tested),
+  `.index/selection-context/` (curated files — `active-branches.yml`,
+  `candidate-signals.yml`, `reusable-recent-capabilities.yml`; edited by
+  hand, not derived), `.index/edges/<slug>.yml` (non-obvious/inferred/
+  historical relationships, with a `confidence` and short `evidence` list so
+  a weak inference is never presented as fact).
 - **What is never stored, only queried:** the old reverse-index fields (who
   requires X, what has tag Y, what completed on date Z) and two
   `selection_context` fields (`recent_sessions`, `explicit_unfinished_targets`)
@@ -517,12 +615,18 @@ Instead:
 1. Determine the new session's own facts — read its exercise/notes files,
    classify its relationships against `.index/`'s existing sessions
    (`Grep`/`Glob`, not by re-scanning all of them from scratch) — and
-   `Write` its `.index/sessions/<slug>/` directory (10 files: `meta.yml`,
-   `summary.txt`, 8 relationship lists).
+   `Write` its `.index/sessions/<slug>/` directory (`meta.yml` with its
+   `status` field set per "Fast index", `summary.txt`, 8 relationship lists,
+   plus `cross_repo_links.yml` only if this session cited/bridged a sibling
+   repo's concept).
 2. `Write` any newly-named `.index/future-targets/<slug>.yml`, `Edit` a
    branch's `.index/branches/<slug>.yml` if this session extends or opens
    it, `rm` a `.index/future-targets/<slug>.yml` the moment its title
-   becomes this session's own title.
+   becomes this session's own title. `Write` a new `.index/cold-runs/
+   <slug>.yml` if this session's concept is foundational enough to warrant a
+   retention check (see "Retention checks"); if this session itself resolves
+   a due one instead, `Edit` that existing cold-run file's `status` and, on
+   `passed`, `Edit` the original concept's `meta.yml` `status` to `retained`.
 3. Retrospective revision of an *older* session's fields is still allowed
    (that's `.index/`'s whole point of difference from `.history/`), but is a
    deliberate, targeted `Edit` to that one file — only when this new
@@ -532,8 +636,10 @@ Instead:
 4. Validate structurally before finishing — no script; run the checks
    listed in `.index/schema.yml`'s `validation` section directly with
    `Grep`/`Glob`: every reference resolves, no future-target title is also a
-   completed session, every `sessions/<slug>/` directory has exactly its 10
-   files, every tag matches the lowercase-dash pattern.
+   completed session, every `sessions/<slug>/` directory has its 10 fixed
+   files plus `cross_repo_links.yml` if and only if this session actually
+   cited or bridged a sibling repo's concept, every tag matches the
+   lowercase-dash pattern.
 
 This incremental update is the write agent's job (`.skills/session-close.md`),
 not a separately-triggered task.

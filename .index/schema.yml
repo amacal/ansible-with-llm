@@ -72,10 +72,11 @@ directory_layout:
     files:
       meta.yml:
         format: "YAML mapping, every value a scalar"
-        fields_in_order: [title, kind, target, file, date]
+        fields_in_order: [title, kind, status, target, file, date]
         field_notes:
           title: "exact Concept Title, double-quoted"
           kind: "implementation | review"
+          status: "demonstrated | retained — see CLAUDE.md's 'Retention checks'/'Fast index'. Always demonstrated at first close; promoted to retained only when a .index/cold-runs/<slug>.yml for this exact title resolves status: passed."
           target: "docker-local | vagrant-local | lxd-local | hetzner-cloud | aws-cloud"
           file: "{target-dir}/{dir}/ for implementation sessions (trailing slash — an exercise is a directory; {dir} is the short exercise directory name, not the slug — this field is the current location and is updated on rename), — for review sessions"
           date: "YYYY-MM-DD, double-quoted"
@@ -97,6 +98,15 @@ directory_layout:
         derived_from.yml instead — a thin retarget
         of a previous role to a new target environment IS a derived_from relationship, not
         a distinct "reused code" fact needing its own field.
+    optional_files:
+      cross_repo_links.yml:
+        format: "YAML list of mappings, present only when this session actually cited or bridged a sibling -with-llm repo's concept (see CLAUDE.md's 'Cross-repo transfer'); omitted entirely otherwise, not an empty list"
+        entry_fields: [repo, title, relationship, evidence_status_there]
+        field_notes:
+          repo: "the sibling repo's exact name, e.g. math-with-llm"
+          title: "that sibling session's exact Concept Title, double-quoted"
+          relationship: "cites | bridges — see CLAUDE.md's three honest outcomes"
+          evidence_status_there: "demonstrated | retained — read live from the sibling's own meta.yml at the time this session ran, never assumed or cached"
 
   future_targets:
     path: ".index/future-targets/<slug>.yml"
@@ -124,6 +134,26 @@ directory_layout:
       sessions: "YAML list of exact Concept Titles in this branch, chronological, never — (a branch always has at least one session)"
       frontier: "YAML list of exact Concept Titles — completed sessions in this branch with no completed descendant inside the same branch, or the branch's most recently dated session; never —"
       explicit_future_targets: "YAML list of Target Titles named as this branch's own next steps, or —"
+
+  cold_runs:
+    path: ".index/cold-runs/<slug>.yml"
+    one_file_per: "one scheduled retention check for a concept judged foundational at close time (see CLAUDE.md's 'Retention checks') — <slug> is that concept's own exact title run through slug_algorithm, same identity as its sessions/<slug>/ directory"
+    format: "YAML mapping"
+    fields_in_order: [concept, due_date, status, task, result]
+    field_notes:
+      concept: "exact Concept Title this check tests retention of, double-quoted — must resolve to an existing sessions/*/meta.yml title"
+      due_date: "YYYY-MM-DD, double-quoted — roughly 1-2 weeks after the original session, a judgment call stated explicitly at write time, never a mechanical formula"
+      status: "pending | passed | failed"
+      task: "— while pending; once resolved, a one-line factual description of the actual new task used to test retention (a different scenario than the original exercise, per CLAUDE.md)"
+      result: "— while pending; once resolved, a one-line factual outcome"
+    lifecycle: >
+      Written at close time when a session's concept is judged foundational. Checked by
+      session-select at the start of every session thereafter; any with due_date <= today
+      and status: pending is surfaced first, ahead of new candidates. Resolved by editing
+      status to passed or failed and filling task/result — never deleted afterward, unlike
+      future-targets: a resolved check is itself the permanent evidence record this whole
+      mechanism exists to produce. On passed, the concept's own sessions/<slug>/meta.yml
+      status field is promoted from demonstrated to retained in the same close.
 
   open_gaps:
     path: ".index/open-gaps/<category>/<slug>.yml"
@@ -203,6 +233,8 @@ computed_queries:
   by_date: 'grep -l "date: \"<YYYY-MM-DD>\"" .index/sessions/*/meta.yml'
   future_targets_list: "ls .index/future-targets/"
   branch_membership: 'grep -l "<exact Concept Title>" .index/branches/*.yml'
+  cold_runs_due: "grep -l 'status: pending' .index/cold-runs/*.yml 2>/dev/null, then check each one's due_date against today — run at the start of every session-select, per CLAUDE.md's 'Retention checks'"
+  status_lookup: "grep -h '^status:' .index/sessions/*/meta.yml | sort | uniq -c   (demonstrated vs. retained counts — how much of the done-set has actually survived a retention check)"
 
 # ---------------------------------------------------------------------------
 # validation: no script (deliberate choice — see CLAUDE.md's Tooling section for why).
@@ -211,7 +243,7 @@ computed_queries:
 # ---------------------------------------------------------------------------
 validation:
   checks:
-    - "every sessions/<slug>/ directory contains exactly the 10 files enumerated above (meta.yml + summary.txt + 8 list fields) — none missing, none extra"
+    - "every sessions/<slug>/ directory contains exactly the 10 fixed files enumerated above (meta.yml + summary.txt + 8 list fields) plus cross_repo_links.yml if and only if this session cited/bridged a sibling repo's concept — none missing, none extra beyond that one optional file"
     - "every title referenced in any prerequisites.yml/uses_concepts.yml/derived_from.yml/related_to.yml resolves to some sessions/*/meta.yml's title field"
     - "every title referenced in any sessions/*/unlocks.yml resolves to either a sessions/*/meta.yml title or a future-targets/*.yml title"
     - "every title referenced in any sessions/*/future_targets.yml resolves to either a sessions/*/meta.yml title or a future-targets/*.yml title, and the corresponding future-targets/*.yml's mentioned_by list includes this session back"
@@ -219,3 +251,7 @@ validation:
     - "every branches/*.yml's sessions and frontier entries resolve to a real sessions/*/meta.yml title"
     - "every concepts.yml/capabilities.yml tag matches ^[a-z0-9]+(-[a-z0-9]+)*$"
     - "meta.yml's target field is one of docker-local | vagrant-local | lxd-local | hetzner-cloud | aws-cloud, and matches the target implied by the file field's directory prefix"
+    - "meta.yml's status field is exactly demonstrated or retained; retained only ever set as the direct result of a cold-runs/<slug>.yml resolving to status: passed for that exact title"
+    - "every cold-runs/<slug>.yml's concept field resolves to a real sessions/*/meta.yml title"
+    - "no cold-runs/<slug>.yml is ever deleted — status pending/passed/failed are the only transitions, never a removed file"
+    - "every cross_repo_links.yml entry's repo/title pair, if independently re-checked, is plausible against that sibling's own current .index/ (spot-check, not exhaustive) — evidence_status_there is never a guess"
