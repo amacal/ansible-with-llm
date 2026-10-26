@@ -187,23 +187,44 @@ write agent's report, the same way a branch or future-target decision
 already is — never mechanical, never skipped just because it's easier not
 to decide.
 
-A due retention check takes priority in session selection (see "Session
-selection") over a new topic: a small, genuinely new task exercising the
-same concept from a different angle — a different managed-node state or
-module than the original exercise used — attempted without re-reading the
-original exercise's notes file and with hints withheld more strictly than
-usual (the point is finding out what actually stuck, not re-teaching it
-under a different name). It's verified the exact same way every other
-exercise here is: a second idempotent run reporting zero `changed` tasks,
-never a softer bar just because it's a review.
+There is no dedicated retention-check session or task of any kind — no
+extra `kind`, no standalone sitting, nothing scheduled onto the calendar as
+its own event. A pending check is only ever resolved by organic evidence:
+whenever closing any later session finds that session's own
+`uses_concepts.yml` naming a concept with a pending cold-run, and that
+session applied it correctly and unaided — no hint needed, nothing in its
+own `corrections`/`bugs_found` tied to it — that use *is* the retention
+check, passed. Resolve the cold-run right there, as a small direct edit
+folded into that session's own ordinary close (see "Session closing
+ritual") — no separate task, no extra session, no extra fork beyond
+whatever that close already uses. This is a judgment call stated
+explicitly in that close's report (which concept, which session, why the
+use counts as genuinely fluent) — a concept merely mentioned in passing, or
+only reused with heavy hinting, doesn't qualify as evidence either way, and
+is left pending. If instead a later session shows the concept used
+incorrectly, or only recovered with a hint, that's a real failure, not
+silence — record it the same way (see below).
+
+Because nothing resolves a due concept except a session that happens to
+need it, topic selection (see "Session selection") weighs due concepts
+directly when choosing what's next: among otherwise-comparable candidates,
+prefer one that would naturally put a concept with a pending cold-run to
+use again — as a prerequisite, a point of comparison, or a building
+block — over an equally-good one that wouldn't, so the concept gets a real
+chance to be exercised again soon rather than only by luck. This is a
+preference that shapes which real topic comes next, never a license to
+invent a check-shaped candidate that wouldn't otherwise be a reasonable
+exercise in its own right.
 
 Passing updates that concept's `.index/sessions/<slug>/meta.yml` `status`
-field from `demonstrated` to `retained` (see "Fast index"). Failing doesn't
-just quietly expire the check — it's evidence the concept needs real
-reinforcement, and feeds back into session selection as a priority
-candidate, the same weight as an open gap. Either outcome is recorded in
-`.index/cold-runs/<slug>.yml` and the resolving session's own `.history/`
-entry; a retention check is never silently dropped once due.
+field from `demonstrated` to `retained` (see "Fast index"). A concept that
+instead comes back wrong doesn't just quietly expire — mark the cold-run
+`status: failed` with `result` stating which session and what went wrong,
+and that feeds back into session selection as a priority candidate for a
+real new exercise, the same weight as an open gap. Every outcome is
+recorded in `.index/cold-runs/<slug>.yml`'s `result` field — a retention
+check is never silently dropped once due, and never silently resolved
+without stating why.
 
 ## Idempotency discipline
 
@@ -400,8 +421,7 @@ this repo's own sessions only (see "Fast index").
   deliberately feed into candidate selection, specifically to avoid
   re-teaching from scratch what's already solidly evidenced elsewhere. Keep
   the two separate in the report: one is color, the other is a real input to
-  the decision, and also surfaces any due retention check (see "Retention
-  checks") first, ahead of new candidates.
+  the decision.
 - Present the candidates to you as a plain text list myself — never via an
   interactive-choice tool, under any circumstances. The agent
   investigates/reports; it never decides or interacts with you.
@@ -414,6 +434,14 @@ this repo's own sessions only (see "Fast index").
   except a missing-prerequisite stepping-stone toward a named future
   target — name the larger target and why the intermediate is the right
   entry point.
+- When a concept has a due, still-pending retention check (see "Retention
+  checks"), prefer a candidate that would naturally put it to use again —
+  as a prerequisite, a point of comparison, or a building block — over an
+  otherwise equally-good candidate that wouldn't, so it gets a real chance
+  to be exercised again soon. State this explicitly when it's a factor in
+  the ranking. Never invent a candidate whose only real purpose is
+  exercising that concept; it has to be a reasonable next topic in its own
+  right that happens to touch it.
 - For each proposal, briefly state why it is interesting given what has
   already been done.
 - Be deliberate about topic selection. Consider the full trajectory —
@@ -799,7 +827,9 @@ Then update `.index/` — **incrementally, never a full regeneration, no
 script** (see "Fast index (`.index/`)"): `Write` the new session's
 directory, `Write`/`rm` any future-target files it affects, `Edit` a branch
 file only if this session extends or opens it, revise an older session's
-fields only when specifically warranted.
+fields only when specifically warranted — and, if this session's own
+`uses_concepts.yml` names a concept with a pending retention check, credit
+or fail that organic evidence in the same pass (see "Retention checks").
 
 Two sequential agent calls:
 1. **Write agent** (fork, `.skills/session-close.md`) — writes the notes

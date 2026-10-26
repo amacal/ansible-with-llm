@@ -139,21 +139,25 @@ directory_layout:
     path: ".index/cold-runs/<slug>.yml"
     one_file_per: "one scheduled retention check for a concept judged foundational at close time (see CLAUDE.md's 'Retention checks') — <slug> is that concept's own exact title run through slug_algorithm, same identity as its sessions/<slug>/ directory"
     format: "YAML mapping"
-    fields_in_order: [concept, due_date, status, task, result]
+    fields_in_order: [concept, due_date, status, result]
     field_notes:
       concept: "exact Concept Title this check tests retention of, double-quoted — must resolve to an existing sessions/*/meta.yml title"
       due_date: "YYYY-MM-DD, double-quoted — roughly 1-2 weeks after the original session, a judgment call stated explicitly at write time, never a mechanical formula"
       status: "pending | passed | failed"
-      task: "— while pending; once resolved, a one-line factual description of the actual new task used to test retention (a different scenario than the original exercise, per CLAUDE.md)"
-      result: "— while pending; once resolved, a one-line factual outcome"
+      result: "— while pending; once resolved, a one-line factual outcome naming the later session whose own close supplied the organic evidence and why it counts"
     lifecycle: >
-      Written at close time when a session's concept is judged foundational. Checked by
-      session-select at the start of every session thereafter; any with due_date <= today
-      and status: pending is surfaced first, ahead of new candidates. Resolved by editing
-      status to passed or failed and filling task/result — never deleted afterward, unlike
-      future-targets: a resolved check is itself the permanent evidence record this whole
-      mechanism exists to produce. On passed, the concept's own sessions/<slug>/meta.yml
-      status field is promoted from demonstrated to retained in the same close.
+      Written at close time when a session's concept is judged foundational. There is no
+      dedicated retention-check session or task — checked by session-select at the start
+      of every session thereafter only to weigh candidate topics (see CLAUDE.md's
+      'Retention checks' and 'Session selection'), any with due_date <= today and
+      status: pending named so a candidate that would naturally exercise it again can be
+      preferred, never surfaced as a task of its own. Resolved only as a side effect of
+      whichever later session's own close organically exercised the concept: status edited
+      to passed or failed and result filled in that session's own close — never deleted
+      afterward, unlike future-targets: a resolved check is itself the permanent evidence
+      record this whole mechanism exists to produce. On passed, the concept's own
+      sessions/<slug>/meta.yml status field is promoted from demonstrated to retained in
+      the same close.
 
   open_gaps:
     path: ".index/open-gaps/<category>/<slug>.yml"
