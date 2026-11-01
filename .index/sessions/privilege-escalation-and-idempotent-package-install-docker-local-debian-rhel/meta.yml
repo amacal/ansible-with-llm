@@ -1,5 +1,6 @@
 title: "Privilege Escalation and Idempotent Package Install (docker-local, debian+rhel)"
 kind: implementation
+status: "demonstrated"
 target: docker-local
 file: docker-local/packages-become/
 date: "2026-10-03"

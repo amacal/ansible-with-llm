@@ -1,5 +1,6 @@
 title: "Inventory, Ad-hoc Connectivity and Facts (docker-local, debian)"
 kind: implementation
+status: "demonstrated"
 target: docker-local
 file: docker-local/inventory-basics/
 date: "2026-10-02"

@@ -211,7 +211,13 @@ directly when choosing what's next: among otherwise-comparable candidates,
 prefer one that would naturally put a concept with a pending cold-run to
 use again — as a prerequisite, a point of comparison, or a building
 block — over an equally-good one that wouldn't, so the concept gets a real
-chance to be exercised again soon rather than only by luck. This is a
+chance to be exercised again soon rather than only by luck. Checks on
+closely-linked concepts still share one due date, scheduled together at
+write time rather than drifting apart — when weighing due concepts here, a
+candidate that would naturally exercise a whole cluster at once is
+especially preferred over one touching only part of it, since each concept
+in the cluster still gets judged and recorded passed or failed
+independently. This is a
 preference that shapes which real topic comes next, never a license to
 invent a check-shaped candidate that wouldn't otherwise be a reasonable
 exercise in its own right.

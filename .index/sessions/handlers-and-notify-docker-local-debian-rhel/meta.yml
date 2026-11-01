@@ -1,5 +1,6 @@
 title: "Handlers and Notify (docker-local, debian+rhel)"
 kind: implementation
+status: "demonstrated"
 target: docker-local
 file: docker-local/handlers-notify/
 date: "2026-10-03"

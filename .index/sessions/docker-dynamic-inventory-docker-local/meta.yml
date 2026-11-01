@@ -1,5 +1,6 @@
 title: "Docker Dynamic Inventory (docker-local)"
 kind: implementation
+status: "demonstrated"
 target: docker-local
 file: docker-local/inventory-dynamic/
 date: "2026-10-03"

@@ -1,5 +1,6 @@
 title: "Multi-Group Inventory, group_vars and Precedence (docker-local, debian+rhel)"
 kind: implementation
+status: "demonstrated"
 target: docker-local
 file: docker-local/inventory-groups/
 date: "2026-10-02"
